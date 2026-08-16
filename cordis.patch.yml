@@ -11,7 +11,9 @@
     # ── 四子代理协作团队（v0.5.0，宿主层，任何 preset 会话可用）────────────────
     # 4 个 tool-subagent 实例 = 4 个独立上下文的 spawn 子代理。persona 自包含
     # （内嵌 MC 时代知识），toolFilter 白名单不含 skill/bash/pwsh——不依赖 preset
-    # 会话层工具。全部 one-shot（前台阻塞拿到结果）+ maxDepth: 0（不可再委派）。
+    # 会话层工具。全部 one-shot（前台阻塞拿到结果）+ maxDepth: 1（子代理自身位于
+    # depth 1，允许首层委派；再委派孙代 depth 2 会被拒——maxDepth 是绝对深度上限，
+    # 0 会连首层 spawn 都拒绝，见 dsh subagent resolveChildDepth）。
     # 注意：restrict() 在子代理启动时校验工具名，未知名直接抛错——名单只放已
     # 注册的全局工具；web_fetch 因宿主默认 fetch: false 未注册，故 A 只用 web_search。
 
@@ -21,7 +23,7 @@
         provider: spawn
         toolName: subagent_mc_plan
         backgroundMode: one-shot
-        maxDepth: 0
+        maxDepth: 1
         toolFilter:
           allow:
             - read
@@ -118,7 +120,7 @@
         provider: spawn
         toolName: subagent_mc_skeleton
         backgroundMode: one-shot
-        maxDepth: 0
+        maxDepth: 1
         toolFilter:
           allow:
             - read
@@ -219,7 +221,7 @@
         provider: spawn
         toolName: subagent_mc_content
         backgroundMode: one-shot
-        maxDepth: 0
+        maxDepth: 1
         toolFilter:
           allow:
             - read
@@ -311,7 +313,7 @@
         provider: spawn
         toolName: subagent_mc_verify
         backgroundMode: one-shot
-        maxDepth: 0
+        maxDepth: 1
         toolFilter:
           allow:
             - read
