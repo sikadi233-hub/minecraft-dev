@@ -40,7 +40,7 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 
 | 预设 | 内容 |
 |---|---|
-| `minecraft`（Minecraft 专家） | 一键切换的专精 agent：standard 全工具集（shell / 文件 / 检索 / 技能 / 计划 / 目标 / 子代理 / 工作流）+ 中文专家人设 + 全局可见的 7 个技能与 4 个内置子代理 subagent_mc_plan/skeleton/content/verify（见下方「安装 Minecraft 专家 agent」） |
+| `minecraft`（Minecraft 专家） | 一键切换的专精 agent：standard 全工具集（shell / 文件 / 检索 / 技能 / 计划 / 目标 / 子代理 / 工作流）+ 中文专家人设 + 全局可见的 7 个技能与 4 个内置子代理 subagent_mc_plan/skeleton/content/verify（v0.6.0 起装完插件重启 dsh 后**自动安装**到 `$DSH_HOME/.agent-presets/minecraft/`，见下方「Minecraft 专家 agent 的安装」） |
 
 ## 安装
 
@@ -90,7 +90,7 @@ pnpm dsh plugin --profile web add minecraft-dev --registry=https://registry.npmj
 ### 验证安装
 
 ```sh
-pnpm dsh --profile web --dump-config     # 应出现 "# == minecraft-dev" 层与六行插件（skills/tools + 4 个 subagent 实例）
+pnpm dsh --profile web --dump-config     # 应出现 "# == minecraft-dev" 层与七行插件（skills/tools/preset + 4 个 subagent 实例）
 ```
 
 ### 卸载
@@ -99,9 +99,21 @@ pnpm dsh --profile web --dump-config     # 应出现 "# == minecraft-dev" 层与
 dsh plugin --profile web remove minecraft-dev
 ```
 
-### 安装 Minecraft 专家 agent（可选）
+### 安装 Minecraft 专家 agent（v0.6.0 起自动）
 
-装完插件后，可再装一个「Minecraft 专家」agent preset，让 agent 带上专家人设与子代理/工作流委派能力：
+**装完插件重启 dsh 后自动安装，无需手动复制**：插件每次启动（挂载）时把自带的 `preset/minecraft/` 复制到 preset 扫描根：
+
+- 目标：`$DSH_HOME/.agent-presets/minecraft/`（默认 `C:\Users\<用户>\.dsh\.agent-presets\minecraft\`；设了 `DSH_HOME` 时以 `$DSH_HOME` 为准）。
+- 幂等：目标已有 `agent.cordis.yml` 就跳过，**绝不覆盖本地修改**；目录存在但缺 composition 文件时视为损坏并自动修复。
+- 关闭：在 `$DSH_HOME/cordis.patch.yml`（或 profile 的 `cordis.patch.yml`）追加：
+
+```yaml
+- id: minecraft-preset
+  config:
+    autoInstallPreset: false
+```
+
+- 老版本（<0.6.0）或关闭自动安装时，手动复制：
 
 ```sh
 # 1. 建用户 preset 根（dsh 自动把 ~/.dsh/.agent-presets 追加为 user 根，
@@ -185,4 +197,5 @@ npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BR
 - preset 人设为 2026-08 基线；26.x 生态（NeoForge 26.2 beta）变化时以技能 references 更新为准。
 - 4 个子代理的 toolFilter 白名单不含 `web_fetch`：宿主默认 `fetch: false` 未注册该工具（A 环只用 `web_search`）；若部署自定义开启 `fetch: true`，可把 `web_fetch` 加回 A 的 allow 名单。
 - toolFilter 名单在子代理启动时校验（`tools.restrict()`），未知工具名直接报错——部署裁剪工具集（如禁用 tool-fs/tool-web）时需同步改 `cordis.patch.yml` 的 allow 名单（报错信息会列出已知全局工具名，可据此调整）。
+- preset 自动安装（v0.6.0）发生在 dsh 启动（插件挂载）时——装完插件**必须重启 dsh** 才触发（这同时也是插件生效所需的重启）；只写入、永不覆盖已有 preset（`agent.cordis.yml` 存在即跳过）；关闭开关 `autoInstallPreset: false`；preset 内容更新不会自动传播——需删掉 `$DSH_HOME/.agent-presets/minecraft/` 让下次启动重新安装。
 - 子代理继承宿主进程环境（`JAVA_HOME` 等）：老线（1.7.10/1.12.2/1.16.5）构建失败多为 JDK 8 环境问题而非代码问题，D 环会优先报环境。

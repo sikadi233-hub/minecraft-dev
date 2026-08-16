@@ -8,6 +8,14 @@
         gradleTimeoutMs: 600000
         outputTailChars: 12000
 
+    # ── agent preset 自动安装（v0.6.0）──────────────────────────────────────
+    # `dsh plugin add` 只装 cordis 插件，不会把 preset 放进 roster 扫描的
+    # $DSH_HOME/.agent-presets/。此插件在每次 dsh 启动（挂载）时自动复制
+    # preset/minecraft/ 过去；目标已有 agent.cordis.yml 则跳过（不覆盖本地
+    # 修改）。可用配置 autoInstallPreset: false 关闭（见 README）。
+    - id: minecraft-preset
+      name: minecraft-dev/preset
+
     # ── 四子代理协作团队（v0.5.0，宿主层，任何 preset 会话可用）────────────────
     # 4 个 tool-subagent 实例 = 4 个独立上下文的 spawn 子代理。persona 自包含
     # （内嵌 MC 时代知识），toolFilter 白名单不含 skill/bash/pwsh——不依赖 preset

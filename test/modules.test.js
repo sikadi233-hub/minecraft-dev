@@ -25,6 +25,20 @@ for (const spec of ['../skills.js', '../tools.js']) {
   })
 }
 
+test('module ../preset.js exports name/inject/apply with no service deps', async () => {
+  let mod
+  try {
+    mod = await import('../preset.js')
+  } catch (error) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND') return // deps absent outside a profile
+    throw error
+  }
+  assert.equal(typeof mod.name, 'string')
+  assert.ok(Array.isArray(mod.inject))
+  assert.equal(mod.inject.length, 0)
+  assert.equal(typeof mod.apply, 'function')
+})
+
 test('skills provider reads every bundled SKILL.md body', async () => {
   let mod
   try {
