@@ -1,8 +1,13 @@
 {
   "name": "minecraft-dev",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Minecraft development skills and tools for DeepSeek Harness: Paper/Spigot server plugins (modern and legacy lines), Fabric, Forge and NeoForge mods, MC 1.7.10 through 26.x, plus the mc_gradle Gradle runner, modern major-mod references (Create/Botania/AE2/Mekanism/Ars Nouveau/Farmer's Delight/Curios/JEI/REI/Patchouli) and the check-doc-links link verifier",
   "type": "module",
+  "main": "skills.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sikadi233-hub/minecraft-dev.git"
+  },
   "files": [
     "skills.js",
     "tools.js",
@@ -17,9 +22,23 @@
     "./package.json": "./package.json"
   },
   "dsh": {
+    "plugin": true,
+    "kind": "server",
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
+  },
+  "disclosure": {
+    "cloud": false,
+    "network": [],
+    "offlineMode": true,
+    "apiKeys": [],
+    "permissions": {
+      "filesystem": "mc_scaffold writes files under the user-specified targetDir only",
+      "subprocess": "mc_gradle executes gradlew inside the user-specified project directory"
+    },
+    "jurisdiction": [],
+    "retention": "none"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
