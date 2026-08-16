@@ -25,6 +25,12 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 | `mc_scaffold` | 一句话创建完整可构建项目：paper / fabric / forge / neoforge / spigot 五平台，自动配好构建脚本、主类、元数据、**时代对应的 Gradle wrapper** |
 | `mc_gradle` | 在项目里跑 `gradlew <task>`：终端卡片显示、超时自动杀进程树、输出头尾截断、非零退出码不报错而是可读呈现 |
 
+### 1 个 Agent 预设
+
+| 预设 | 内容 |
+|---|---|
+| `minecraft`（Minecraft 专家） | 一键切换的专精 agent：standard 全工具集（shell / 文件 / 检索 / 技能 / 计划 / 目标 / 子代理 / 工作流）+ 中文专家人设 + 全局可见的 7 个技能（见下方「安装 Minecraft 专家 agent」） |
+
 ## 安装
 
 ### 方式一：npm 安装（推荐）
@@ -82,6 +88,26 @@ pnpm dsh --profile web --dump-config     # 应出现 "# == minecraft-dev" 层与
 dsh plugin --profile web remove minecraft-dev
 ```
 
+### 安装 Minecraft 专家 agent（可选）
+
+装完插件后，可再装一个「Minecraft 专家」agent preset，让 agent 带上专家人设与子代理/工作流委派能力：
+
+```sh
+# 1. 建用户 preset 根（dsh 自动把 ~/.dsh/.agent-presets 追加为 user 根，
+#    但目录不存在时发现为空，需先创建）
+mkdir -p ~/.dsh/.agent-presets
+
+# 2. 复制 preset 目录（含 preset.yml + agent.cordis.yml）
+cp -r <minecraft-dev 仓库>/preset/minecraft ~/.dsh/.agent-presets/
+```
+
+- 最终落盘：`~/.dsh/.agent-presets/minecraft/preset.yml` 与 `agent.cordis.yml`（本机默认 `C:\Users\YX-ASUS\.dsh\.agent-presets\minecraft\`；设了 `DSH_HOME` 时以 `$DSH_HOME` 为准）。
+- **禁止**改内置安装目录（dsh 仓库 `apps/cli/config/agent-presets/`）：升级会被覆盖；卸载 = 删 `~/.dsh/.agent-presets/minecraft/`。
+- 发现是**热扫描**：运行中的 dsh 无需重启即可看到新 preset；但**新会话**才生效。
+- Windows 用户：可用 PowerShell `Copy-Item -Recurse` 等价命令。
+- 切换位置：Web UI **新建会话**的 preset 选择器选「Minecraft 专家」。
+- 验证：新建会话选该 preset，问「列出你能用的技能」，应返回 7 个 minecraft-* 技能 + mc_scaffold/mc_gradle + subagent/subagent_fork/tool-workflow/ralph 工具；问「你是什么模型、工作目录在哪」，应回答本会话模型与目录（`{{model}}` / `{{cwd}}` 解析）。
+
 ## 使用
 
 ### 技能：模型自动加载，也可手动注入
@@ -131,3 +157,5 @@ npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BR
 - `mc_gradle` 依赖目标机存在 taskkill（win32）；输出截断为头尾内联标记，不做 spill 文件。
 - 用户本地同名技能（`~/.dsh/skills/` 等，rank 低于 600）会覆盖本包 bundled 技能——预期行为，冲突时删本地同名目录。
 - 版本信息以 2026-08 为准；26.x 生态仍在快速变化（NeoForge 26.2 为 beta）。
+- 市场类型判定：preset 文件（`preset.yml` + `agent.cordis.yml`）必须放在仓库的 `preset/minecraft/` 子目录——放仓库根目录会把市场类型从 cordis-plugin 误判为 agent-preset。
+- preset 人设为 2026-08 基线；26.x 生态（NeoForge 26.2 beta）变化时以技能 references 更新为准。
