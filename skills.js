@@ -50,7 +50,9 @@ const SKILLS = [
 ]
 
 const candidates = SKILLS.map(skill => {
-  const dir = fileURLToPath(new URL(`../assets/skills/${skill.name}/`, import.meta.url))
+  // skills.js sits at the package root, so assets are a sibling directory
+  // (unlike dsh-skill-badge, whose ../ escapes its src/ subdirectory).
+  const dir = fileURLToPath(new URL(`./assets/skills/${skill.name}/`, import.meta.url))
   return {
     name: skill.name,
     description: skill.description,
@@ -59,7 +61,7 @@ const candidates = SKILLS.map(skill => {
     source: 'bundled',
     resourceBase: { kind: 'directory', path: dir },
     rank: BUNDLED_SKILL_RANK,
-    locator: new URL(`../assets/skills/${skill.name}/SKILL.md`, import.meta.url),
+    locator: new URL(`./assets/skills/${skill.name}/SKILL.md`, import.meta.url),
   }
 })
 

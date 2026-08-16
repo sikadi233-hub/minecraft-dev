@@ -1,6 +1,6 @@
 {
   "name": "minecraft-dev",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Minecraft development skills and tools for DeepSeek Harness: Paper/Spigot server plugins (modern and legacy lines), Fabric, Forge and NeoForge mods, MC 1.7.10 through 26.x, plus the mc_gradle Gradle runner, modern major-mod references (Create/Botania/AE2/Mekanism/Ars Nouveau/Farmer's Delight/Curios/JEI/REI/Patchouli) and the check-doc-links link verifier",
   "type": "module",
   "main": "skills.js",
