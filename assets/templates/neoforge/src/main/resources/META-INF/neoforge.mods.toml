@@ -1,0 +1,20 @@
+# 21.x 起无需加载器声明字段（走默认 javafml）；license 必填。
+# ${...} 占位符由 build.gradle 的 processResources expand 在构建时展开（值来自 gradle.properties）。
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description="${mod_description}"
+
+[[dependencies.${mod_id}]]
+modId="neoforge"
+versionRange="${neo_version_range}"
+mandatory=true
+
+[[dependencies.${mod_id}]]
+modId="minecraft"
+versionRange="${minecraft_version_range}"
+mandatory=true

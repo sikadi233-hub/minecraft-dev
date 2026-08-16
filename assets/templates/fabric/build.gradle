@@ -1,0 +1,34 @@
+plugins {
+    id 'net.fabricmc.fabric-loom-remap' version "{{loomVersion}}"
+    id 'maven-publish'
+}
+
+group = "{{pkg}}"
+version = "0.1.0"
+
+dependencies {
+    minecraft "com.mojang:minecraft:{{mcVersion}}"
+    // 官方 Mojang 映射（mojmap）：Fabric 1.x 时代全用 mojmap，不用 yarn。
+    // 注意：mojmap 工程里类名是 BuiltInRegistries/Item.Properties/CommandSourceStack 等，
+    // 与社区教程常见的 Yarn 名（Registries/Item.Settings/ServerCommandSource）不同，勿混用。
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:{{loaderVersion}}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:{{fabricApiVersion}}"
+}
+
+processResources {
+    // 把 Gradle version 展开进 fabric.mod.json 的 ${version}。
+    filesMatching('fabric.mod.json') {
+        expand "version": version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = {{javaVersion}}
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.toVersion({{javaVersion}})
+    targetCompatibility = JavaVersion.toVersion({{javaVersion}})
+}

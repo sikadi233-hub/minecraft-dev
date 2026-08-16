@@ -1,0 +1,54 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath '{{forgeGradle}}'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+
+version = "0.1.0"
+group = "{{pkg}}"
+archivesBaseName = "{{name}}"
+
+// MDK 原样：Mojang 发的是 Java 8 客户端，1.16.5 时代钉 Java 8。
+java.toolchain.languageVersion = JavaLanguageVersion.of(8)
+
+minecraft {
+    // 官方映射（MDK 现状：official 1.16.5）。
+    mappings channel: '{{mappingsChannel}}', version: '{{mappingsVersion}}'
+    runs {
+        client {
+            workingDirectory project.file('run')
+        }
+        server {
+            workingDirectory project.file('run')
+        }
+        data {
+            workingDirectory project.file('run')
+            args '--mod', '{{name}}', '--all'
+        }
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:{{mcVersion}}-{{forgeVersion}}'
+}
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": "{{name}}",
+            "Implementation-Version": "${version}",
+        ])
+    }
+    finalizedBy('reobfJar')
+}
+
+// 数据生成输出目录（runData 产物）。
+sourceSets.main.resources { srcDir 'src/generated/resources' }

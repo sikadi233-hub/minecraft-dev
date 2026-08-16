@@ -1,0 +1,16 @@
+name: {{name}}
+version: 0.1.0
+main: {{pkg}}.{{MainClass}}
+description: {{name}} plugin
+author: {{name}}
+# 注意：不要写 api 版本字段（该字段 1.13 才引入；老线服务端写它会拒载或告警）。
+#
+# commands:
+#   mycommand:
+#     description: Do something
+#     usage: /<command>
+#     permission: {{name}}.mycommand
+# permissions:
+#   {{name}}.mycommand:
+#     description: Allows /mycommand
+#     default: true

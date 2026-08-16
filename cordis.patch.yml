@@ -1,0 +1,9 @@
+- insert:
+    - id: minecraft-skills
+      name: minecraft-dev/skills
+
+    - id: minecraft-tools
+      name: minecraft-dev/tools
+      config:
+        gradleTimeoutMs: 600000
+        outputTailChars: 12000

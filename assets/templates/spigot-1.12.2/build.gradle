@@ -1,0 +1,26 @@
+plugins {
+    id 'java'
+}
+
+group = '{{pkg}}'
+version = '0.1.0'
+archivesBaseName = '{{name}}'
+
+sourceCompatibility = targetCompatibility = '1.8'
+
+repositories {
+    // spigot-api 本体（1.12.2-R0.1-SNAPSHOT 实测 200，2026-08）。
+    maven { url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    // 传递依赖 bungeecord-chat:1.12-SNAPSHOT 只在此仓库可解析
+    // （老 sonatype snapshots 已死，勿照 wiki 老写法）。
+    maven { url = 'https://hub.spigotmc.org/nexus/content/groups/public/' }
+    // spigot-api 其余传递依赖（guava 21.0 / gson 2.8.0 / snakeyaml 1.19 /
+    // commons-lang 2.6 / json-simple 1.1.1）只在 Maven Central，必须显式加
+    // （2026-08 真实构建实测缺此仓库解析失败）。
+    mavenCentral()
+}
+
+dependencies {
+    // spigot-api 以 compileOnly 引入：编译时可见，不打进产物 jar（运行期由服务端提供）。
+    compileOnly '{{spigotApi}}'
+}

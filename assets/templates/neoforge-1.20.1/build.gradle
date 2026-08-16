@@ -1,0 +1,33 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    // 1.20.1 路线：legacyforge 插件对 Forge 47.1.3 坐标开发（官方 MDK 现状，见方案 R6）。
+    id 'net.neoforged.moddev.legacyforge' version '{{moddevVersion}}'
+    id 'idea'
+}
+
+version = "0.1.0"
+group = "{{pkg}}"
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+legacyForge {
+    version = "{{mcVersion}}-{{forgeVersion}}"
+    parchment {
+        mappingsVersion = "2023.09.03"
+        minecraftVersion = "1.20.1"
+    }
+    runs {
+        client { client() }
+        server { server() }
+        data { data() }
+    }
+    mods {
+        "{{name}}" { sourceSet sourceSets.main }
+    }
+}
+
+// TODO: generateModMetadata 把 ${mod_id} 等展开进 META-INF/mods.toml 与 pack.mcmeta。
+processResources {
+    expand project.properties
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "modid": "{{name}}",
+    "name": "{{name}}",
+    "description": "{{name}} Forge mod (1.12.2)",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "authorList": ["YourName"]
+  }
+]

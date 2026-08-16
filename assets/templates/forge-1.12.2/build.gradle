@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath '{{forgeGradle}}'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+
+version = "0.1.0"
+group = "{{pkg}}"
+archivesBaseName = "{{name}}"
+
+sourceCompatibility = targetCompatibility = '1.8'
+
+minecraft {
+    // MCP 快照映射：snapshot 20171003-1.12（按线钉选）。
+    mappings channel: '{{mappingsChannel}}', version: '{{mappingsVersion}}'
+    runs {
+        client {
+            workingDirectory project.file('run')
+        }
+        server {
+            workingDirectory project.file('run')
+        }
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:{{mcVersion}}-{{forgeVersion}}'
+}
+
+// 把 version/mcversion 展开进 mcmod.info（MDK 原样，${version}/${mcversion} 不能字面出包）。
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", "{{mcVersion}}"
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': '{{mcVersion}}'
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+// 产物必须 reobf 成 SRG 名才能被 Forge 加载。
+jar {
+    finalizedBy('reobfJar')
+}

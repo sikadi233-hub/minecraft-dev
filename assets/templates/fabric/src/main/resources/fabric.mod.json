@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "{{name}}",
+  "version": "${version}",
+  "name": "{{name}}",
+  "description": "{{name}} Fabric mod",
+  "authors": ["YourName"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["{{pkg}}.{{MainClass}}"],
+    "client": ["{{pkg}}.{{MainClass}}"]
+  },
+  "depends": {
+    "fabricloader": ">={{loaderVersion}}",
+    "minecraft": "~{{mcVersion}}",
+    "java": ">={{javaVersion}}",
+    "fabric-api": "*"
+  }
+}

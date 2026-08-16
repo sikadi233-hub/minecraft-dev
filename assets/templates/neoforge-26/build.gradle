@@ -1,0 +1,29 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '{{moddevVersion}}'
+    id 'idea'
+}
+
+version = "0.1.0"
+group = "{{pkg}}"
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+neoForge {
+    version = project.neo_version
+    // TODO: 26.x 官方 MDK 无映射配置块；如需自定义映射请参照 1.21 线模板自行添加。
+    runs {
+        client { client() }
+        server { server(); programArgument '--nogui' }
+        data { data() }
+    }
+    mods {
+        "{{name}}" { sourceSet sourceSets.main }
+    }
+}
+
+// TODO: generateModMetadata 把 ${mod_id} 等展开进 META-INF/neoforge.mods.toml。
+processResources {
+    expand project.properties
+}

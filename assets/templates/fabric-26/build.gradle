@@ -1,0 +1,33 @@
+plugins {
+    // 26.x 线用原生 loom（无 remap 后缀），依赖一律走 implementation（非 1.x 时代的 mod 依赖配置）。
+    id 'net.fabricmc.fabric-loom' version "{{loomVersion}}"
+    id 'maven-publish'
+}
+
+group = "{{pkg}}"
+version = "0.1.0"
+
+dependencies {
+    minecraft "com.mojang:minecraft:{{mcVersion}}"
+    // 26.1 起 Minecraft 不再混淆，Mojang 官方类名直接可用，因此没有映射声明
+    // （26.x 无 yarn，loom 26.1+ 对未混淆版本默认即官方名；官方 26.2 分支示例即不写映射行）。
+    // 依赖配置用 implementation（1.x 时代是 mod 依赖配置，26.x 用普通 implementation）。
+    implementation "net.fabricmc:fabric-loader:{{loaderVersion}}"
+    implementation "net.fabricmc.fabric-api:fabric-api:{{fabricApiVersion}}"
+}
+
+processResources {
+    filesMatching('fabric.mod.json') {
+        expand "version": version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = {{javaVersion}}
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.toVersion({{javaVersion}})
+    targetCompatibility = JavaVersion.toVersion({{javaVersion}})
+}

@@ -1,0 +1,36 @@
+{
+  "name": "minecraft-dev",
+  "version": "0.4.1",
+  "description": "Minecraft development skills and tools for DeepSeek Harness: Paper/Spigot server plugins (modern and legacy lines), Fabric, Forge and NeoForge mods, MC 1.7.10 through 26.x, plus the mc_gradle Gradle runner, modern major-mod references (Create/Botania/AE2/Mekanism/Ars Nouveau/Farmer's Delight/Curios/JEI/REI/Patchouli) and the check-doc-links link verifier",
+  "type": "module",
+  "files": [
+    "skills.js",
+    "tools.js",
+    "lib",
+    "assets",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "exports": {
+    "./skills": "./skills.js",
+    "./tools": "./tools.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-tools": "^0.1.0-rc.5",
+    "@deepseek-ai/dsh-skill": "^0.1.0-rc.5",
+    "@deepseek-ai/schemastery": "^3.18.1"
+  },
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "typecheck": "tsc --noEmit -p jsconfig.json",
+    "check-links": "node scripts/check-doc-links.mjs"
+  },
+  "license": "MIT"
+}

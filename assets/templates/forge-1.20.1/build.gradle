@@ -1,0 +1,62 @@
+plugins {
+    // 钉选 6.0.54（MDK 写 [6.0,6.2)）；版本更新时同步 versions.js 矩阵。
+    id 'net.minecraftforge.gradle' version '{{forgeGradlePluginVersion}}'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+}
+
+version = "0.1.0"
+group = "{{pkg}}"
+archivesBaseName = "{{name}}"
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+minecraft {
+    mappings channel: mapping_channel, version: mapping_version
+    copyIdeResources = true
+    runs {
+        client {
+            workingDirectory project.file('run')
+        }
+        server {
+            workingDirectory project.file('run')
+        }
+        gameTestServer {
+            workingDirectory project.file('run')
+        }
+        data {
+            workingDirectory project.file('run')
+            args '--mod', mod_id, '--all'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:{{mcVersion}}-{{forgeVersion}}"
+}
+
+// mods.toml / pack.mcmeta 里的 ${mod_id} 等由 Gradle expand 替换（与 scaffold 的 {{}} 不冲突）。
+def replaceProperties = [
+    minecraft_version: "{{mcVersion}}", forge_version: "{{forgeVersion}}",
+    mod_id: "{{name}}", mod_name: mod_name, mod_license: mod_license,
+    mod_version: mod_version, mod_authors: mod_authors, mod_description: mod_description,
+]
+
+processResources {
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) { expand replaceProperties }
+}
+
+jar {
+    manifest {
+        attributes([
+            "Specification-Title": mod_id,
+            "Implementation-Version": project.version,
+        ])
+    }
+    finalizedBy 'reobfJar'
+}

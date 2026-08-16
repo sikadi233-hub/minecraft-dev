@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group = '{{pkg}}'
+version = '0.1.0'
+archivesBaseName = '{{name}}'
+
+sourceCompatibility = targetCompatibility = '1.8'
+
+repositories {
+    // 1.7.10 的 spigot-api 不存在于任何公共 maven（hub.spigotmc.org 最早 1.8，
+    // 2026-08 实测全镜像 404），API 类由 libs/ 下的 vendored jar 提供
+    // （见 libs/README.txt），本块无需仓库。需要其它依赖时在此加 mavenCentral()。
+}
+
+dependencies {
+    // vendored spigot-1.7.10-R0.1-SNAPSHOT.jar：编译时可见，不打进产物。
+    // 缺文件时构建直接失败（fail-loud），报错信息指向 libs/README.txt。
+    compileOnly files('libs/spigot-1.7.10-R0.1-SNAPSHOT.jar')
+}

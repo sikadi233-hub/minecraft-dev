@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": false,
+    "baseUrl": ".",
+    "paths": {
+      "@deepseek-ai/cordis": [
+        "C:/Users/YX-ASUS/Desktop/deepseek-harness-master/vendor/cordis/lib/types/index.d.ts"
+      ],
+      "@deepseek-ai/dsh-tools": [
+        "C:/Users/YX-ASUS/Desktop/deepseek-harness-master/packages/core/tools/lib/types/index.d.ts"
+      ],
+      "@deepseek-ai/dsh-skill": [
+        "C:/Users/YX-ASUS/Desktop/deepseek-harness-master/packages/skill/skill/lib/types/index.d.ts"
+      ],
+      "@deepseek-ai/schemastery": [
+        "C:/Users/YX-ASUS/Desktop/deepseek-harness-master/vendor/schemastery/lib/types/index.d.ts"
+      ]
+    }
+  },
+  "include": ["*.js", "lib/**/*.js", "test/**/*.js"]
+}

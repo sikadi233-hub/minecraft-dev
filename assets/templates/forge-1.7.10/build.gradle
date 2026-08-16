@@ -1,0 +1,33 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.minecraftforge.net' }
+    }
+    dependencies {
+        // 官方 FG 1.2-SNAPSHOT 跑不动现代 Gradle，且官方 MDK zip 已 404；
+        // 走 anatawa12 fork（Maven Central 有）。
+        classpath '{{forgeGradle}}'
+    }
+}
+
+apply plugin: 'forge'
+
+version = "0.1.0"
+group = "{{pkg}}"
+archivesBaseName = "{{name}}"
+
+minecraft {
+    version = "{{mcVersion}}-{{forgeVersion}}"
+    runDir = "run"
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+processResources {
+    // 把 version/mcversion 展开进 mcmod.info。
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': version, 'mcversion': '{{mcVersion}}'
+    }
+}
