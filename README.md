@@ -25,11 +25,22 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 | `mc_scaffold` | 一句话创建完整可构建项目：paper / fabric / forge / neoforge / spigot 五平台，自动配好构建脚本、主类、元数据、**时代对应的 Gradle wrapper** |
 | `mc_gradle` | 在项目里跑 `gradlew <task>`：终端卡片显示、超时自动杀进程树、输出头尾截断、非零退出码不报错而是可读呈现 |
 
+### 4 个内置子代理（v0.5.0，四子代理团队）
+
+| 子代理（toolName） | 环节与产出 |
+|---|---|
+| `subagent_mc_plan` | A 方案：勘察项目 + web_search 联网查证 → 写 `<项目>/PLAN.md` + 5 行摘要 |
+| `subagent_mc_skeleton` | B 框架：按 PLAN.md 用 mc_scaffold 搭骨架 + 资源模板 + 测试桩 → 变更清单 |
+| `subagent_mc_content` | C 内容：按 PLAN.md 与骨架填充功能代码 → 变更清单 + 不确定点 |
+| `subagent_mc_verify` | D 编译审查：mc_gradle 编译/测试、修小错 → 验证报告 |
+
+（注：4 个子代理为宿主层工具，任何 preset 会话可见；使用说明见 Minecraft 专家 preset persona。）
+
 ### 1 个 Agent 预设
 
 | 预设 | 内容 |
 |---|---|
-| `minecraft`（Minecraft 专家） | 一键切换的专精 agent：standard 全工具集（shell / 文件 / 检索 / 技能 / 计划 / 目标 / 子代理 / 工作流）+ 中文专家人设 + 全局可见的 7 个技能（见下方「安装 Minecraft 专家 agent」） |
+| `minecraft`（Minecraft 专家） | 一键切换的专精 agent：standard 全工具集（shell / 文件 / 检索 / 技能 / 计划 / 目标 / 子代理 / 工作流）+ 中文专家人设 + 全局可见的 7 个技能与 4 个内置子代理 subagent_mc_plan/skeleton/content/verify（见下方「安装 Minecraft 专家 agent」） |
 
 ## 安装
 
@@ -46,7 +57,7 @@ dsh plugin --profile web add minecraft-dev
 
 ```sh
 cd minecraft-dev && pnpm pack        # 产出 minecraft-dev-x.y.z.tgz
-dsh plugin --profile web add ./minecraft-dev-0.4.0.tgz
+dsh plugin --profile web add ./minecraft-dev-0.5.0.tgz
 ```
 
 ### 方式三：源码直连（开发迭代，改完即生效）
@@ -79,7 +90,7 @@ pnpm dsh plugin --profile web add minecraft-dev --registry=https://registry.npmj
 ### 验证安装
 
 ```sh
-pnpm dsh --profile web --dump-config     # 应出现 "# == minecraft-dev" 层与两行插件
+pnpm dsh --profile web --dump-config     # 应出现 "# == minecraft-dev" 层与六行插件（skills/tools + 4 个 subagent 实例）
 ```
 
 ### 卸载
@@ -106,7 +117,7 @@ cp -r <minecraft-dev 仓库>/preset/minecraft ~/.dsh/.agent-presets/
 - 发现是**热扫描**：运行中的 dsh 无需重启即可看到新 preset；但**新会话**才生效。
 - Windows 用户：可用 PowerShell `Copy-Item -Recurse` 等价命令。
 - 切换位置：Web UI **新建会话**的 preset 选择器选「Minecraft 专家」。
-- 验证：新建会话选该 preset，问「列出你能用的技能」，应返回 7 个 minecraft-* 技能 + mc_scaffold/mc_gradle + subagent/subagent_fork/tool-workflow/ralph 工具；问「你是什么模型、工作目录在哪」，应回答本会话模型与目录（`{{model}}` / `{{cwd}}` 解析）。
+- 验证：新建会话选该 preset，问「列出你能用的技能」，应返回 7 个 minecraft-* 技能 + mc_scaffold/mc_gradle + 4 个内置子代理 subagent_mc_* + subagent/subagent_fork/tool-workflow/ralph 工具；问「你是什么模型、工作目录在哪」，应回答本会话模型与目录（`{{model}}` / `{{cwd}}` 解析）。
 
 ## 使用
 
@@ -126,6 +137,19 @@ cp -r <minecraft-dev 仓库>/preset/minecraft ~/.dsh/.agent-presets/
 ```
 
 完整流程：模型加载技能 → 调 `mc_scaffold` 生成项目（含 wrapper）→ `mc_gradle build`（或 `cmd /c "gradlew.bat build"`）→ 产出 `build/libs/*.jar`。
+
+### 四子代理团队委派（v0.5.0）
+
+3+ 工作项的新插件/模组任务可用内置四子代理团队（A→B→C→D 委派链）；小改动建议 agent 内联完成。示例对话：
+
+```
+用四子代理团队帮我做一个 Paper 插件 my-plugin，包名 com.example.myplugin，MC 1.21.8
+```
+
+- 委派链严格 A → B → C → D 串行：A（方案）勘察项目并联网查证，写 `<项目>/PLAN.md` + 5 行摘要；B（框架）按 PLAN.md 用 `mc_scaffold` 搭骨架；C（内容）填充功能代码；D（编译审查）用 `mc_gradle` 构建/测试并出验证报告。前一环未返回不得调下一环。
+- `<项目>/PLAN.md` 是唯一共享工件：B/C/D 每次重读；宿主改需求 = 先改 PLAN.md 再继续。
+- 某环失败：附上失败报告重委派同一环，或宿主小修后继续；不要静默跳过 D。
+- 每个子代理独立上下文、看不到宿主对话，委派 prompt 必须带绝对路径；最终回复有行数上限（A=5 行摘要、B/C≤30 行变更清单、D≤40 行验证报告）。
 
 ### 平台 × 版本支持矩阵（mc_scaffold）
 
@@ -159,3 +183,6 @@ npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BR
 - 版本信息以 2026-08 为准；26.x 生态仍在快速变化（NeoForge 26.2 为 beta）。
 - 市场类型判定：preset 文件（`preset.yml` + `agent.cordis.yml`）必须放在仓库的 `preset/minecraft/` 子目录——放仓库根目录会把市场类型从 cordis-plugin 误判为 agent-preset。
 - preset 人设为 2026-08 基线；26.x 生态（NeoForge 26.2 beta）变化时以技能 references 更新为准。
+- 4 个子代理的 toolFilter 白名单不含 `web_fetch`：宿主默认 `fetch: false` 未注册该工具（A 环只用 `web_search`）；若部署自定义开启 `fetch: true`，可把 `web_fetch` 加回 A 的 allow 名单。
+- toolFilter 名单在子代理启动时校验（`tools.restrict()`），未知工具名直接报错——部署裁剪工具集（如禁用 tool-fs/tool-web）时需同步改 `cordis.patch.yml` 的 allow 名单（报错信息会列出已知全局工具名，可据此调整）。
+- 子代理继承宿主进程环境（`JAVA_HOME` 等）：老线（1.7.10/1.12.2/1.16.5）构建失败多为 JDK 8 环境问题而非代码问题，D 环会优先报环境。

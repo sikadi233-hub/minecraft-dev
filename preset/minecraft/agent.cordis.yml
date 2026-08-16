@@ -171,24 +171,41 @@
          Never start a project by hand-writing Gradle files. Call mc_scaffold, then iterate
          inside the generated structure.
 
-      ## Subagent collaboration
+      ## 四子代理团队（内置委派链 A→B→C→D）
 
-      Large tasks split into four stages; delegate with the subagent tools instead of doing
-      everything inline:
+      The minecraft-dev bundle registers four dedicated subagents at the host layer,
+      available in every session's catalog: subagent_mc_plan (A 方案), subagent_mc_skeleton
+      (B 框架), subagent_mc_content (C 内容), subagent_mc_verify (D 编译审查). Each is a
+      spawn subagent with its own isolated context and a self-contained persona — the
+      delegation prompt must carry absolute paths, the goal, and constraints; the child
+      cannot see this conversation. All four are one-shot and block until done: run them in
+      strict A→B→C→D order, never in parallel on the same project, never skipping a stage.
 
-      1. Plan (方案) — produce the implementation plan yourself or with a design subagent
-         (plan mode, or a subagent tasked with design): structure, platforms, eras, file
-         layout, before any code is written.
-      2. Skeleton (框架) — hand the skeleton to a subagent via subagent_fork: build.gradle,
-         resource templates, entrypoint classes.
-      3. Content (内容) — fill details with subagent (spawn): content subagents run in
-         parallel, each owning a slice, continuable in the background.
-      4. Review (审查) — finish with tool-ralph (subagentProvider: spawn, maxRounds: 64) or
-         a dedicated review subagent, covering compile correctness and era-correct API use.
+      When to delegate: a new plugin/mod with 3+ distinct work items, or any task you
+      estimate would cost several thousand tokens inline. Small single-file edits: do them
+      yourself. The shared artifact is <project>/PLAN.md written by A and consumed by
+      B/C/D — each delegation passes only the previous stage's output path plus its
+      summary, nothing more.
 
-      Whole complex workflows can be encoded as a tool-workflow run instead of manual
-      chaining. The delegation group is part of this preset: subagent, subagent_fork,
-      tool-workflow, and tool-ralph are all in your catalog.
+      1. A — subagent_mc_plan. Prompt: absolute project dir, goal, target MC version +
+         platform (or "decide"), constraints. A explores and web-verifies, writes PLAN.md,
+         returns a 5-line summary. Skim PLAN.md yourself; if the user overrides any
+         decision, fix PLAN.md before continuing.
+      2. B — subagent_mc_skeleton. Prompt: PLAN.md path. B scaffolds with mc_scaffold,
+         creates skeleton + test stub, returns the change list.
+      3. C — subagent_mc_content. Prompt: PLAN.md path. C fills feature content, returns
+         the change list with flagged uncertainties. Wide features: delegate one C per
+         slice, sequentially — each slice is an independent context.
+      4. D — subagent_mc_verify. Prompt: PLAN.md path. D builds via mc_gradle, fixes small
+         errors, returns the verification report.
+      5. Aggregate for the user: the plan's 5-line summary, the change lists, and the final
+         verification report — do not paste full stage outputs back unless asked.
+
+      On a stage failure, re-delegate that stage with the failure report attached as extra
+      context; never silently skip D. Iron rules 3/6 still apply to work you do yourself
+      (builds via mc_gradle, new projects via mc_scaffold). tool-ralph and tool-workflow
+      remain available alternatives for review and for encoding the whole chain as one
+      workflow run.
 
       ## Environment and boundaries
 
