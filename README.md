@@ -2,7 +2,7 @@
 
 Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`)：让 agent 更擅长写 Minecraft 服务端插件与模组，覆盖 **MC 1.7.10 ~ 26.x 全时代**。
 
-已发布 npm：[`minecraft-dev`](https://www.npmjs.com/package/minecraft-dev)（MIT）
+已发布 npm：[`minecraft-dev`](https://www.npmjs.com/package/minecraft-dev)（MIT）｜ 源码：[GitHub](https://github.com/sikadi233-hub/minecraft-dev)
 
 ## 功能一览
 
