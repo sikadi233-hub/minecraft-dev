@@ -48,7 +48,8 @@ test('normalizeMcLine strips patch and x suffix', () => {
 
 test('toApiVersion derives plugin.yml api-version', () => {
   assert.equal(toApiVersion('1.21.8'), '1.21')
-  assert.equal(toApiVersion('26.2'), '26')
+  assert.equal(toApiVersion('26.2'), '26.2')
+  assert.equal(toApiVersion('26'), '26.2')
   assert.equal(toApiVersion('1.20.x'), '1.20')
 })
 

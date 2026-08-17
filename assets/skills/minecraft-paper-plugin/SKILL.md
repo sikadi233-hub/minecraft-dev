@@ -35,7 +35,7 @@ paper-api 坐标（仓库 `https://repo.papermc.io/repository/maven-public/`）�
 name: my-plugin          # 小写，与 jar 名一致
 version: 0.1.0
 main: com.example.MyPlugin   # 主类全限定名，写错服务器直接拒绝加载
-api-version: "1.21"      # 声明目标 API 级别：1.x 写主次版本（"1.21"）；26.x 只写主版本（"26"，官方文档明确不含小版本）
+api-version: "1.21"      # 声明目标 API 级别：1.x 写主次版本（"1.21"）；26.x 写主次完整版本（"26.2"）——实测 26.2 服务端拒绝裸 "26"（IllegalArgumentException），必须 major.minor
 author: name
 description: 一句话说明
 # 可选：commands / permissions / depend / softdepend / libraries
