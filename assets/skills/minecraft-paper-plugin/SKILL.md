@@ -66,3 +66,8 @@ description: 一句话说明
 3. 观察控制台：`[name] enabled` 出现即加载成功；报错看堆栈第一行
 4. 改代码 → 重新 build → 重新拷贝重启（迭代期可配 `gradlew build -x test` 加速）
 5. 本地起 Paper 测试服：从 papermc.io 下载对应版本 server jar，`java -jar paper.jar` 首次生成 eula.txt，同意后启动
+
+## 8. 开工前核对（intake）
+
+- 必问：**MC 版本**（1.20.x / 1.21.x / 26.2）、**核心**（Paper / Spigot / Purpur / Pufferfish / **Folia**——Folia 无 Bukkit 同步调度器）、兼容插件（softdepend，如 MMOItems / WorldGuard）。
+- 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 Paper + 1.21.x 最新稳定线。

@@ -97,3 +97,8 @@ pack.mcmeta：1.16.5 为 pack_format 6、1.20.1 为 15（模板已配）。
 8. **老线运行环境**：1.16.5 客户端官方只发 Java 8（模板 toolchain 8）；1.7.10/1.12.2 时代服务端同样 Java 8。编译级别保持 8，不要为了"现代"改级别（R14）。
 9. **首次构建慢**：Forge 老线首次构建要下 MCP/反编译数据，可达 30 分钟~1 小时（R9）；不是卡死，看 `gradlew --status` 或日志。
 10. **1.7.10 专属**：`setTextureName` 只有 1.7.10 有（1.8+ 移除，用 JSON 模型）；`CreativeTabs.tabMisc` 小写字段名是老时代写法，1.16.5+ 是 `CreativeModeTab.TAB_MISC`。
+
+## 8. 开工前核对（intake）
+
+- 必问：**时代**（1.7.10→FG2+wrapper 7.4.2 / 1.12.2→FG3+4.9 / 1.16.5→FG5+7.3.3 / 1.20.1→FG6+8.8）、Forge 版本、**是否混合服**（Cauldron/Mohist/CatServer——事件侧漏与 NMS 差异）。
+- 时代决定构建链，**必问不猜**；用户信息不足先批量提问（minecraft-intake）。

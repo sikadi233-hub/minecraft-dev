@@ -92,3 +92,8 @@ plugins {
 ## 7. Multi-loader 项目（进阶）
 
 同时支持多 loader（Fabric+Forge/NeoForge）的常见结构：`common` 子项目放共享代码，各 loader 子项目依赖 common 并各自提供入口。1.20.1+ 可用 Architectury 或手写多模块 Gradle 结构；老版本（1.12.2）一般按 loader 拆独立项目。需要时再深入，不默认使用。
+
+## 8. 开工前核对（intake）
+
+- 必问：**平台 + MC 版本**（决定 JDK/wrapper 配对）、是否老线（JDK8 + JAVA_HOME）、spigot 1.7.10 的 vendored jar 是否就位。
+- 默认：按第 1 节版本时代表钉选；用户信息不足先批量提问（minecraft-intake），禁止猜着开工。

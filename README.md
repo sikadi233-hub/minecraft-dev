@@ -6,7 +6,7 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 
 ## 功能一览
 
-### 7 个技能（模型按需加载，不占常驻上下文）
+### 8 个技能（模型按需加载，不占常驻上下文）
 
 | 技能 | 内容 |
 |---|---|
@@ -17,6 +17,7 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 | `minecraft-neoforge-mod` | NeoForge（1.20.1 legacyforge / 1.21.x / 26.2 beta）+ 3 份 API 参考 |
 | `minecraft-spigot-legacy` | 1.7.10 / 1.12.2 老线 Bukkit 插件 + Cauldron/Thermos/Mohist 混合服说明 + 2 份老线 API 参考 |
 | `minecraft-major-mods` | 大型模组附属开发：28 个模组条目（1.7.10×10 / 1.12.2×8 / 现代×10，含拔刀剑、神秘时代、匠魂、植物魔法、Create、Botania、AE2、Mekanism、Curios、JEI/REI 等），每条含核实过的 curse.maven 坐标与扩展点 |
+| `minecraft-intake` | **任务信息核对（v0.7）**：用户请求写插件/mod/附属但信息不足时，按场景批量提问（版本/平台/加载器/核心/混合端/兼容性/部署），一次问全、不重复问、授权默认 |
 
 ### 2 个工具
 
@@ -129,7 +130,7 @@ cp -r <minecraft-dev 仓库>/preset/minecraft ~/.dsh/.agent-presets/
 - 发现是**热扫描**：运行中的 dsh 无需重启即可看到新 preset；但**新会话**才生效。
 - Windows 用户：可用 PowerShell `Copy-Item -Recurse` 等价命令。
 - 切换位置：Web UI **新建会话**的 preset 选择器选「Minecraft 专家」。
-- 验证：新建会话选该 preset，问「列出你能用的技能」，应返回 7 个 minecraft-* 技能 + mc_scaffold/mc_gradle + 4 个内置子代理 subagent_mc_* + subagent/subagent_fork/tool-workflow/ralph 工具；问「你是什么模型、工作目录在哪」，应回答本会话模型与目录（`{{model}}` / `{{cwd}}` 解析）。
+- 验证：新建会话选该 preset，问「列出你能用的技能」，应返回 8 个 minecraft-* 技能 + mc_scaffold/mc_gradle + 4 个内置子代理 subagent_mc_* + subagent/subagent_fork/tool-workflow/ralph 工具；问「你是什么模型、工作目录在哪」，应回答本会话模型与目录（`{{model}}` / `{{cwd}}` 解析）。
 
 ## 使用
 
@@ -198,4 +199,5 @@ npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BR
 - 4 个子代理的 toolFilter 白名单不含 `web_fetch`：宿主默认 `fetch: false` 未注册该工具（A 环只用 `web_search`）；若部署自定义开启 `fetch: true`，可把 `web_fetch` 加回 A 的 allow 名单。
 - toolFilter 名单在子代理启动时校验（`tools.restrict()`），未知工具名直接报错——部署裁剪工具集（如禁用 tool-fs/tool-web）时需同步改 `cordis.patch.yml` 的 allow 名单（报错信息会列出已知全局工具名，可据此调整）。
 - preset 自动安装（v0.6.0）发生在 dsh 启动（插件挂载）时——装完插件**必须重启 dsh** 才触发（这同时也是插件生效所需的重启）；只写入、永不覆盖已有 preset（`agent.cordis.yml` 存在即跳过）；关闭开关 `autoInstallPreset: false`；preset 内容更新不会自动传播——需删掉 `$DSH_HOME/.agent-presets/minecraft/` 让下次启动重新安装。
+- **preset 人设更新（v0.7：铁律 7 信息核对）需重装 preset**：删 `$DSH_HOME/.agent-presets/minecraft/` → 重启 dsh → 自动重装（人设含"信息不足先批量提问"行为规则；不重装则只有技能层生效，行为规则缺失）。
 - 子代理继承宿主进程环境（`JAVA_HOME` 等）：老线（1.7.10/1.12.2/1.16.5）构建失败多为 JDK 8 环境问题而非代码问题，D 环会优先报环境。

@@ -95,3 +95,8 @@ mandatory=true
 7. **runServer 首次失败**：先查 `run/eula.txt` 是否 `eula=true`；`online-mode` 调试期可关。
 8. **首次构建超时**：NeoForm 反编译 + Parchment 下载可达一小时，日志无输出不代表卡死。
 9. **1.20.1 线是老形态**：`mods.toml`（非 neoforge.mods.toml）、`modLoader="javafml"`、依赖 `forge` 段——照 3.8/4 节 1.20.1 差异处理，别套 21.x 形态。
+
+## 8. 开工前核对（intake）
+
+- 必问：**线**（1.20.1 legacyforge / 1.21.x / 26.2 beta——mods.toml 与 neoforge.mods.toml 不同）、neo 版本、是否客户端/服务端/双端。
+- 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 1.21.x 主线（26.2 为 beta）。

@@ -188,3 +188,8 @@ dependencies {
 | Patchouli | `patchouli` | `vazkii.patchouli.api` | 书本体纯资源数据驱动（patchouli_books）、registerMultiblock 代码多方块、IComponentProcessor |
 
 开发流程速查：确定目标模组与线 → 读 mods 文件（modid/坐标/API 入口）→ build.gradle 配仓库 + compileOnly → 写软依赖门卫（老线 `@Optional` + `isModLoaded`，现代线 `ModList.get().isLoaded` + optional modDependencies）→ 写注册/事件代码（签名对照 references）→ `gradlew build`（老线构建用 JDK 8 + Gradle 8.14.3，见 minecraft-java-build；现代线构建见 minecraft-forge-mod / minecraft-neoforge-mod）→ 拷入服务端实测。
+
+## 8. 开工前核对（intake）
+
+- 必问：**目标模组 + MC 版本 + 模组版本**（fileId 查 references 的 curse.maven 坐标）、**扩展点**（注册什么：花/研究/配方/接口实现）。
+- 坐标缺失宁可标 UNVERIFIED 也不编；用户信息不足先批量提问（minecraft-intake）。

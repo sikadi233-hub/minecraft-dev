@@ -47,6 +47,10 @@ const SKILLS = [
     name: 'minecraft-major-mods',
     description: 'Reference for addon development against major mods on the legacy lines: Thaumcraft, Tinkers Construct, Botania, Twilight Forest, Applied Energistics 2, Mekanism, IndustrialCraft 2, Thermal Expansion, Draconic Evolution and SlashBlade for Minecraft 1.7.10 and 1.12.2. Covers the general addon patterns: soft-dependency detection across Forge/Cauldron/Spigot, compileOnly optional dependencies, curse.maven and Modrinth maven coordinates per mod, and recipe/event integration hooks. Per-mod coordinates and API entry points live in references/api/mods-1.7.10.md and mods-1.12.2.md. Use when developing an addon for one of these mods.',
   },
+  {
+    name: 'minecraft-intake',
+    description: 'Task intake and requirement clarification for Minecraft development (v0.7): when the user asks to create a plugin, mod, or addon but left out critical details, this skill provides the question matrix — Minecraft version, platform / mod loader, server core (Paper family incl. Folia, hybrid cores KCauldron/Thermos/Mohist/CatServer on legacy lines), target mod/plugin compatibility (softdepend list), and deployment (single server vs BungeeCord/Velocity proxy). Rules: ask once in a batch via ask_user_question with (Recommended) options; never re-ask what the user already gave; when the user says "you decide", pick the era default (Paper + current stable line on modern, era-pinned stack on legacy) and state the choice. Use when a Minecraft task lacks version, platform, loader, or compatibility details.',
+  },
 ]
 
 const candidates = SKILLS.map(skill => {

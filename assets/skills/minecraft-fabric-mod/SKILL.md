@@ -136,3 +136,8 @@ group=…
 8. **客户端逻辑混进 main 入口**：`onInitializeClient` 里引用 `Screen`/`GuiGraphics` 等客户端专用类，服务端加载主类时 ClassNotFound——模板里主类同时实现两个接口，加客户端逻辑后应拆独立 client 类（必要时开 splitEnvironmentSourceSets）。
 9. **版本漂移**：fabric-api 逐日发版，表的钉选值数月后会过时；坐标集中在一处（模板 + lib/versions.js），改版本时三处对账：gradle.properties 的 `fabric_api_version`、fabric.mod.json 的 `minecraft` 区间、meta.fabricmc.net 的实际可用性。
 10. **手写 fabric.mod.json 忘 `${version}` 展开**：`version` 恒为字面 `${version}`，loader 解析失败；确认 build.gradle 里有 `processResources { filesMatching('fabric.mod.json') { expand "version": version } }`。
+
+## 9. 开工前核对（intake）
+
+- 必问：**MC 版本**（1.20.1 / 1.21.x / 26.2）、loader 版本（或"最新"）、映射（26.x 起官方 mojmap，yarn 已停）、是否客户端/服务端/双端。
+- 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 Fabric + 最新稳定线。

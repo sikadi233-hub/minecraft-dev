@@ -105,3 +105,8 @@ permissions:
 - `references/api/bukkit-1.7.10.md` — 1.7.10 API 事实（以 enginehub 的 org.bukkit:bukkit:1.7.10-R0.1-SNAPSHOT jar + javadoc 核对，2026-08-16）
 - `references/api/bukkit-1.12.2.md` — 1.12.2 API 事实（以 hub 的 spigot-api-1.12.2-R0.1-SNAPSHOT jar 核对）+ 1.12 增量
 - 混合服 plugin.yml 字段对照：并入上两文件的「plugin.yml 字段」段
+
+## 9. 开工前核对（intake）
+
+- 必问：**1.7.10 vs 1.12.2**（API 差异大）、**混合服核心**（纯 Spigot / KCauldron / Thermos / Mohist / CatServer——事件侧漏与 NMS 差异）、JDK8 环境。
+- 默认：1.12.2 + 纯 Spigot（老线最大生态）；用户信息不足先批量提问（minecraft-intake），禁止猜着开工。
