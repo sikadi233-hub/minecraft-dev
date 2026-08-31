@@ -25,6 +25,7 @@
 | 新 mod | 加载器（Forge/Fabric/NeoForge）、MC 版本、加载器版本 | NeoForge 或 Fabric + 最新稳定线 |
 | 老线 mod | 时代（FG2/3/5 决定 wrapper）、Forge 版本、**是否混合服** | 按时代钉选 |
 | 附属 addon | 目标模组 + MC 版本 + 模组版本、扩展点 | 目标模组最新版本 |
+| 资源包（pack） | 目标 MC 版本、**包类型**、**客户端前端**（OptiFine/citresewn/原版）、分版、服务端侧（自定义物品/改名） | 26.2 + citresewn（按实际客户端） |
 | 跨服/群组 | BungeeCord/Velocity、是否 Folia | 单服 |
 | 兼容性 | 必须兼容的插件/模组列表（softdepend） | 无 |
 
@@ -46,4 +47,4 @@
 
 ## 6. 参考文件索引
 
-- `references/api/intake-matrix.md` — 场景 × 必问项 × 默认值 × 不问时机 全表 + 默认值理由
+- `references/api/intake-matrix.md` — 场景 × 必问项 × 默认值 × 不问时机 全表 + 默认值理由 + **资源包任务补充（v0.7）**

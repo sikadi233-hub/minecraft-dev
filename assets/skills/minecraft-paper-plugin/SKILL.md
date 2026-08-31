@@ -7,7 +7,7 @@
 ## 1. 定位与家族
 
 - Paper 是 Spigot/Bukkit 的延续，API 兼容 Bukkit 插件：为 Paper 写的插件一般也能跑在 Spigot 上（除非用了 Paper 专属 API）。
-- 家族成员：**Paper**（主流推荐）、**Purpur**/Pufferfish（Paper 衍生，额外配置）、**Folia**（Paper 的分区调度分支，API 基本兼容但调度模型完全不同——Folia 上不能用 Bukkit 的同步调度器）。写通用插件默认目标 Paper。
+- 家族成员：**Paper**（主流推荐）、**Purpur**/Pufferfish（Paper 衍生，额外配置）、**Folia**（Paper 的分区调度分支，API 基本兼容但调度模型完全不同——Folia 上不能用 Bukkit 的同步调度器；RegionizedServerInitEvent / GlobalRegionScheduler / EntityScheduler / RegionizedData 与 api-version ≥1.19.4 标记机制详见 `references/api/folia.md`）。写通用插件默认目标 Paper。
 
 ## 2. 版本对应（现代线）
 
@@ -69,5 +69,5 @@ description: 一句话说明
 
 ## 8. 开工前核对（intake）
 
-- 必问：**MC 版本**（1.20.x / 1.21.x / 26.2）、**核心**（Paper / Spigot / Purpur / Pufferfish / **Folia**——Folia 无 Bukkit 同步调度器）、兼容插件（softdepend，如 MMOItems / WorldGuard）。
+- 必问：**MC 版本**（1.20.x / 1.21.x / 26.2）、**核心**（Paper / Spigot / Purpur / Pufferfish / **Folia**——Folia 无 Bukkit 同步调度器，api-version 需 ≥1.19.4 标记，细节见 references/api/folia.md）、兼容插件（softdepend，如 MMOItems / WorldGuard）。
 - 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 Paper + 1.21.x 最新稳定线。

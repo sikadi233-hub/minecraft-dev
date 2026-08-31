@@ -147,6 +147,7 @@ cp -r <minecraft-dev 仓库>/preset/minecraft ~/.dsh/.agent-presets/
 创建一个 Forge 1.12.2 模组 mymod，包名 com.example.mymod
 写一个植物魔法 1.12.2 附属，注册一种新的花
 用 mc_gradle 跑一下当前项目的 build
+帮我做个插件            # 信息不足 → agent 会批量提问（版本/平台/核心/兼容/部署），不会直接开工
 ```
 
 完整流程：模型加载技能 → 调 `mc_scaffold` 生成项目（含 wrapper）→ `mc_gradle build`（或 `cmd /c "gradlew.bat build"`）→ 产出 `build/libs/*.jar`。
@@ -199,5 +200,5 @@ npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BR
 - 4 个子代理的 toolFilter 白名单不含 `web_fetch`：宿主默认 `fetch: false` 未注册该工具（A 环只用 `web_search`）；若部署自定义开启 `fetch: true`，可把 `web_fetch` 加回 A 的 allow 名单。
 - toolFilter 名单在子代理启动时校验（`tools.restrict()`），未知工具名直接报错——部署裁剪工具集（如禁用 tool-fs/tool-web）时需同步改 `cordis.patch.yml` 的 allow 名单（报错信息会列出已知全局工具名，可据此调整）。
 - preset 自动安装（v0.6.0）发生在 dsh 启动（插件挂载）时——装完插件**必须重启 dsh** 才触发（这同时也是插件生效所需的重启）；只写入、永不覆盖已有 preset（`agent.cordis.yml` 存在即跳过）；关闭开关 `autoInstallPreset: false`；preset 内容更新不会自动传播——需删掉 `$DSH_HOME/.agent-presets/minecraft/` 让下次启动重新安装。
-- **preset 人设更新（v0.7：铁律 7 信息核对）需重装 preset**：删 `$DSH_HOME/.agent-presets/minecraft/` → 重启 dsh → 自动重装（人设含"信息不足先批量提问"行为规则；不重装则只有技能层生效，行为规则缺失）。
+- **preset 人设更新（v0.7：铁律 7 信息核对）需重装 preset**：删 `$DSH_HOME/.agent-presets/minecraft/` → 重启 dsh → 自动重装（人设含"信息不足先批量提问"行为规则；不重装则只有技能层生效，行为规则缺失）。**重装会覆盖手改——更新前先备份该目录**。
 - 子代理继承宿主进程环境（`JAVA_HOME` 等）：老线（1.7.10/1.12.2/1.16.5）构建失败多为 JDK 8 环境问题而非代码问题，D 环会优先报环境。
