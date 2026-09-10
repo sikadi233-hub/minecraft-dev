@@ -101,14 +101,23 @@ test('normalizeMcLine boundary versions match the forge era entries', () => {
 test('resolveLine rejects unknown lines and platforms with the supported lists', () => {
   assert.throws(() => resolveLine('fabric', '1.19'), /supported Minecraft lines: 1\.20, 1\.21, 26/)
   assert.throws(() => resolveLine('forge', '1.13'), /supported Minecraft lines: 1\.7, 1\.12, 1\.16, 1\.20/)
-  assert.throws(() => resolveLine('neoforge', '1.19'), /supported Minecraft lines: 1\.20, 1\.21, 26/)
+  assert.throws(() => resolveLine('neoforge', '1.19'), /supported Minecraft lines: 1\.20, 1\.21, 1\.21\.1, 26/)
   assert.throws(() => resolveLine('spigot', '1.21.8'), /no template for spigot 1\.21\.8; supported Minecraft lines: 1\.7, 1\.12/)
   // v0.3: every platform key in the matrix is supported; unknown keys still fail.
   assert.throws(() => resolveLine('unknown', '1.21.8'), /unsupported platform "unknown"; supported: paper, fabric, forge, neoforge, spigot/)
-  // 1.21.3 normalizes to line "1.21" and matches the neoforge 1.21 entry
-  // (startsWith semantics; the plan lists it under unknown lines but the
-  // documented matrix matching makes it resolve — kept as a documented behavior).
-  assert.equal(resolveLine('neoforge', '1.21.3').defaultMcVersion, '1.21.11')
+  // A full version no template pins is now rejected instead of being silently
+  // substituted — silent substitution produced projects for the wrong MC version
+  // (1.21.1 became 1.21.11, whose template has no modLoader and fails to load).
+  assert.throws(
+    () => resolveLine('neoforge', '1.21.3'),
+    /no template pinned to neoforge 1\.21\.3; supported Minecraft versions: 1\.20\.1, 1\.21\.11, 1\.21\.1, 26\.2/,
+  )
+  // Pinned versions resolve exactly, and both 1.21.1 and 1.21.11 coexist.
+  assert.equal(resolveLine('neoforge', '1.21.1').defaultMcVersion, '1.21.1')
+  assert.equal(resolveLine('neoforge', '1.21.1').templateDir, 'neoforge-1.21.1')
+  assert.equal(resolveLine('neoforge', '1.21.11').defaultMcVersion, '1.21.11')
+  // A line-only request still falls back to the line default.
+  assert.equal(resolveLine('neoforge', '1.21').defaultMcVersion, '1.21.11')
 })
 
 test('lineCoords returns the per-line pinned coordinates', () => {

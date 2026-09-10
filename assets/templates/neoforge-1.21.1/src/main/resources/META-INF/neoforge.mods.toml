@@ -1,6 +1,8 @@
-# 1.21.x 中 21.11 起无需加载器声明字段（走默认 javafml）；license 必填。
-# 本文件里的花括号占位符由 build.gradle 的 processResources 在构建时展开（值来自 gradle.properties）。
+# 1.21.1（NeoForge 21.1.x）必须显式声明 modLoader / loaderVersion；license 必填。
+# 花括号占位符由 build.gradle 的 processResources 在构建时展开（值来自 gradle.properties）。
 # 注意：不要在本文件里写“美元号+花括号”形式的示例文字，它会被 Groovy 模板当表达式求值导致构建失败。
+modLoader="javafml"
+loaderVersion="[1,)"
 license="${mod_license}"
 
 [[mods]]

@@ -323,7 +323,39 @@ test('scaffold neoforge 1.21.11 writes neoforge.mods.toml without modLoader', as
 
     const modsToml = await read('src/main/resources/META-INF/neoforge.mods.toml')
     assert.doesNotMatch(modsToml, /modLoader/i)
+    // Regression: never ship a bare dollar-brace example in this file. processResources
+    // expands it, and Groovy evaluates anything of that shape as an expression — the
+    // scaffold's own "${...}" comment used to break the very first build.
+    assert.doesNotMatch(modsToml, /\$\{\s*\.\.\.\s*\}/)
     assert.ok(result.filesCreated.includes('src/main/resources/META-INF/neoforge.mods.toml'))
+
+    const wrapper = await read('gradle/wrapper/gradle-wrapper.properties')
+    assert.match(wrapper, /gradle-9\.2\.1-bin\.zip/)
+  } finally {
+    await rm(target, { recursive: true, force: true })
+  }
+})
+
+test('scaffold neoforge 1.21.1 pins NeoForge 21.1.249 and declares modLoader', async () => {
+  const { result, target, read } = await scaffoldPlatform('neoforge', '1.21.1')
+  try {
+    const build = await read('build.gradle')
+    assert.match(build, /net\.neoforged\.moddev' version '2\.0\.144'/)
+    assert.match(build, /JavaLanguageVersion\.of\(21\)/)
+    assert.doesNotMatch(build, /parchment/i)
+
+    const props = await read('gradle.properties')
+    assert.match(props, /minecraft_version=1\.21\.1/)
+    assert.match(props, /neo_version=21\.1\.249/)
+
+    // 1.21.1 (FML 4.0.x) predates the javafml default, so it must declare both
+    // fields or the client refuses to load the jar with "Missing ModLoader".
+    const modsToml = await read('src/main/resources/META-INF/neoforge.mods.toml')
+    assert.match(modsToml, /modLoader="javafml"/)
+    assert.match(modsToml, /loaderVersion="\[1,\)"/)
+    assert.doesNotMatch(modsToml, /\$\{\s*\.\.\.\s*\}/)
+
+    assert.equal(result.minecraftVersion, '1.21.1')
 
     const wrapper = await read('gradle/wrapper/gradle-wrapper.properties')
     assert.match(wrapper, /gradle-9\.2\.1-bin\.zip/)
