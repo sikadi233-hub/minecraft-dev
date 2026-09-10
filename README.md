@@ -1,6 +1,6 @@
 # minecraft-dev
 
-Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`)：让 agent 更擅长写 Minecraft 服务端插件与模组，覆盖 **MC 1.7.10 ~ 26.x 全时代**。
+Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`)：让 agent 更擅长写 Minecraft 服务端插件与模组，覆盖 **MC 1.7.10 ~ 26.x 全时代**。适配 dsh **≥ 0.1.5-rc.1**（profile/bundle 插件体系；低于此版本请用 0.7.0 及更早版本）。
 
 已发布 npm：[`minecraft-dev`](https://www.npmjs.com/package/minecraft-dev)（MIT）｜ 源码：[GitHub](https://github.com/sikadi233-hub/minecraft-dev)
 
@@ -126,7 +126,7 @@ cp -r <minecraft-dev 仓库>/preset/minecraft ~/.dsh/.agent-presets/
 ```
 
 - 最终落盘：`~/.dsh/.agent-presets/minecraft/preset.yml` 与 `agent.cordis.yml`（本机默认 `C:\Users\YX-ASUS\.dsh\.agent-presets\minecraft\`；设了 `DSH_HOME` 时以 `$DSH_HOME` 为准）。
-- **禁止**改内置安装目录（dsh 仓库 `apps/cli/config/agent-presets/`）：升级会被覆盖；卸载 = 删 `~/.dsh/.agent-presets/minecraft/`。
+- **禁止**改内置安装目录（dsh 仓库 `packages/preset/agent-presets/presets/`）：升级会被覆盖；卸载 = 删 `~/.dsh/.agent-presets/minecraft/`。
 - 发现是**热扫描**：运行中的 dsh 无需重启即可看到新 preset；但**新会话**才生效。
 - Windows 用户：可用 PowerShell `Copy-Item -Recurse` 等价命令。
 - 切换位置：Web UI **新建会话**的 preset 选择器选「Minecraft 专家」。
@@ -189,6 +189,19 @@ npm run test         # node --test 单测（纯函数，无 dsh 依赖）
 npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BROKEN=0 为通过）
 ```
 
+### npm 发布（用户已授权自动执行）
+
+**发布流程由 agent 自动执行**（用户 2026-08-31 确认"以后都这样发"）：
+
+1. `npm whoami --registry=https://registry.npmjs.org` 确认登录；401/404 时先 `npm login --auth-type=web --registry=https://registry.npmjs.org`（浏览器授权，TTY 下会打印完整 `https://www.npmjs.com/auth/cli/...` 链接）。
+2. `npm publish --registry=https://registry.npmjs.org`（prepublishOnly 自动跑测试）。
+3. 发布后 `npm view <name> version` 验证（npm 提示"processing may take a few minutes"，验证需稍等）。
+
+已知坑（2026-08-31 实测）：
+- **token 过期** → `npm publish` 报 `404 PUT /package - Not found`（npm 对未授权发布统一回 404 掩码；不是网络问题）。解法：重新 web 登录。
+- **版本已 staged** → 报 `409 Cannot publish over previously staged version "X.Y.Z"`（上次发布中断残留）。解法：等 staged 过期，或 bump 到下一个版本发布。
+- 浏览器授权 URL 只在真实 TTY 显示（管道/重定向时被 `***` 打码）——需要用户终端操作时明确交给用户。
+
 ## Known Limitations and Deferred Work
 
 - API 参考为精选高频签名（非全量 Javadoc），每份标注核对日期；`npm run check-links` 校验 http(s) 链接与 curse.maven projectId（经 api.cfwidget.com；403 限流等归 UNVERIFIABLE），**fileId 仍须以 CurseForge 文件页「Curse Maven 代码」为准**。API 更新流程：改 references → `npm run check-links` → 人工复核 UNVERIFIABLE 项。
@@ -197,7 +210,7 @@ npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BR
 - 版本信息以 2026-08 为准；26.x 生态仍在快速变化（NeoForge 26.2 为 beta）。
 - 市场类型判定：preset 文件（`preset.yml` + `agent.cordis.yml`）必须放在仓库的 `preset/minecraft/` 子目录——放仓库根目录会把市场类型从 cordis-plugin 误判为 agent-preset。
 - preset 人设为 2026-08 基线；26.x 生态（NeoForge 26.2 beta）变化时以技能 references 更新为准。
-- 4 个子代理的 toolFilter 白名单不含 `web_fetch`：宿主默认 `fetch: false` 未注册该工具（A 环只用 `web_search`）；若部署自定义开启 `fetch: true`，可把 `web_fetch` 加回 A 的 allow 名单。
+- 4 个子代理的 toolFilter：A 环白名单含 `web_search` + `web_fetch`（preset 的 `tool-web` 已设 `fetch: true`，宿主注册 `web_fetch`）；若部署自定义关闭 `fetch`，需把 `web_fetch` 从 A 的 allow 名单移除，否则 `restrict()` 启动校验会报未知工具。
 - toolFilter 名单在子代理启动时校验（`tools.restrict()`），未知工具名直接报错——部署裁剪工具集（如禁用 tool-fs/tool-web）时需同步改 `cordis.patch.yml` 的 allow 名单（报错信息会列出已知全局工具名，可据此调整）。
 - preset 自动安装（v0.6.0）发生在 dsh 启动（插件挂载）时——装完插件**必须重启 dsh** 才触发（这同时也是插件生效所需的重启）；只写入、永不覆盖已有 preset（`agent.cordis.yml` 存在即跳过）；关闭开关 `autoInstallPreset: false`；preset 内容更新不会自动传播——需删掉 `$DSH_HOME/.agent-presets/minecraft/` 让下次启动重新安装。
 - **preset 人设更新（v0.7：铁律 7 信息核对）需重装 preset**：删 `$DSH_HOME/.agent-presets/minecraft/` → 重启 dsh → 自动重装（人设含"信息不足先批量提问"行为规则；不重装则只有技能层生效，行为规则缺失）。**重装会覆盖手改——更新前先备份该目录**。

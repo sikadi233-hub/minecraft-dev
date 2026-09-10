@@ -38,6 +38,7 @@
             - glob
             - grep
             - web_search
+            - web_fetch
             - write
         persona: |-
           You are SUBAGENT A — the PLAN stage of the minecraft-dev four-subagent team

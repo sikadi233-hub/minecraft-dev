@@ -32,7 +32,7 @@
 - id: persona
   name: '@deepseek-ai/dsh-persona'
   config:
-    text: |-
+    prefix: |-
       You are the Minecraft development expert agent: a specialist in Minecraft server plugins
       and mods across the full era range, MC 1.7.10 through 26.2, on all five platforms —
       Spigot, Paper, Forge, Fabric, NeoForge. Driven by {{model}}, working in {{cwd}}.
@@ -232,6 +232,8 @@
       preset carries no self-modification tool. Your tool catalog stays identical across
       plan mode, and each session picks its preset at creation.
 
+    suffix: Your working directory is {{cwd}}.
+
 - id: agent-instructions
   name: '@deepseek-ai/dsh-agent-instructions'
   config:
@@ -293,12 +295,16 @@
 
 # ── goals ───────────────────────────────────────────────────────────────────
 
-# Only the model-facing tool. The goal SERVICE, its session driver, and the
-# `/goal` command stay on the host plane: the Gateway serves the goal domain as
-# Remote endpoints whose receiver comes from a generated descriptor, so it
-# resolves `goals` on the host and an entry-local realm here would hide it. The
-# registry is keyed by session anyway, so one host instance serves every
-# session. What a preset chooses is whether its agent can call the goal tool.
+# The goal SERVICE and its session driver stay on the host plane: the Gateway
+# serves the goal domain as Remote endpoints whose receiver comes from a
+# generated descriptor, so it resolves `goals` on the host and an entry-local
+# realm here would hide it. The registry is keyed by session anyway, so one host
+# instance serves every session. What a preset chooses is whether its agent can
+# use the goal feature at all — the human `/goal` command and the model-facing
+# tool both register into this preset's scoped layers.
+- id: command-goal
+  name: '@deepseek-ai/dsh-command-goal'
+
 - id: tool-goal
   name: '@deepseek-ai/dsh-tool-goal'
 
@@ -393,6 +399,7 @@
       config:
         provider: spawn
         toolName: subagent
+        modelSelectionSettings: true
         backgroundMode: continuable
 
     - id: tool-subagent-fork
@@ -448,9 +455,13 @@
     allowParallelInProgress: true
 
 # The `web` service and its search provider stay in the host composition; only
-# the model-facing tool is per-session.
+# the model-facing tool is per-session (`fetch: true` also registers web_fetch,
+# which the A-stage subagent whitelist consumes — see cordis.patch.yml).
 - id: tool-web
   name: '@deepseek-ai/dsh-tool-web'
   config:
-    fetch: false
+    fetch: true
     searchTimeoutMs: 60000
+
+- id: present
+  name: '@deepseek-ai/dsh-tool-present'
