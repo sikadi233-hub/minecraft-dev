@@ -21,6 +21,7 @@ import { fileURLToPath } from 'node:url'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { BUNDLED_SKILL_RANK } from '@deepseek-ai/dsh-skill'
 import Schema from '@deepseek-ai/schemastery'
+import { runCodexAppServer } from './lib/codex-app-server.js'
 import { architectFacts, renderArchitectBrief } from './lib/architect-brief.js'
 import {
   CODEX_SANDBOXES,
@@ -61,12 +62,21 @@ const SKILL_LOCATOR = new URL('./assets/codex-architect/SKILL.md', import.meta.u
 
 const CODEX_DESCRIPTION = 'Use the user\'s own Codex CLI as an architect for one Minecraft project. '
   + 'Writes <projectDir>/.dsh/codex-architect.md (the exact prompt, readable and editable), then '
-  + 'runs `codex exec` on it through a visible command with the user\'s own Codex account and '
-  + 'configuration. Returns the command, the full merged output, the exit code, the files the run '
-  + 'changed, and the Codex session id (resume with `codex resume <id>`). The prompt is sent on '
-  + 'stdin, so nothing is hidden and the user can re-run the same command themselves. Expect a '
-  + 'skeleton with `// [TODO: Agent B] <description>` markers plus a FILL-SPEC.md; that is the '
-  + 'handoff contract for mc_codex uses.'
+  + 'runs Codex on it through a visible command with the user\'s own Codex account and '
+  + 'configuration. Returns the command, the full merged transcript, the exit code, the files the '
+  + 'run changed, and the Codex thread id. Two modes: "app-server" (default) drives the official '
+  + '`codex app-server --stdio` protocol, which creates a REAL Codex session that shows up in the '
+  + 'Codex desktop app list and can be continued there; "exec" runs `codex exec` as a plain child '
+  + 'process, which is simpler but its sessions stay hidden from the desktop app. Both send the '
+  + 'prompt from the file, so nothing is hidden and the user can reproduce the run themselves. '
+  + 'Expect a skeleton with `// [TODO: Agent B] <description>` markers plus a FILL-SPEC.md; that is '
+  + 'the handoff contract for mc_codex uses.'
+
+/** Transport modes for mc_codex; see the module description for the tradeoff. */
+export const CODEX_MODES = ['app-server', 'exec']
+
+/** Default mode: app-server, so every DSH-driven Codex session is app-visible. */
+export const DEFAULT_CODEX_MODE = 'app-server'
 
 /** Assert the target project directory exists; a missing one is a caller bug. */
 async function assertProjectDir(projectDir) {
@@ -140,6 +150,11 @@ export function apply(ctx, config = {}) {
         enum: [...CODEX_SANDBOXES],
         description: `Codex sandbox (-s) for the run. Default ${DEFAULT_CODEX_SANDBOX}, which the architect needs to write files.`,
       },
+      mode: {
+        type: 'string',
+        enum: [...CODEX_MODES],
+        description: `How to drive Codex. ${DEFAULT_CODEX_MODE} (default) speaks the official app-server protocol, so the session is a real Codex session that appears in the Codex desktop app and can be continued there. exec spawns \`codex exec\` directly: same prompt, but the session stays out of the desktop app list. Use exec only when the app-server path is unavailable or the user asks for it.`,
+      },
       model: {
         type: 'string',
         description: 'Codex model (-m) for this run, e.g. deepseek-v4-pro. Omit to use the user\'s native Codex model.',
@@ -158,6 +173,7 @@ export function apply(ctx, config = {}) {
         type: 'object',
         additionalProperties: false,
         properties: {
+          mode: { type: 'string', required: true },
           command: { type: 'string', required: true },
           executable: { type: 'string', required: true },
           projectDir: { type: 'string', required: true },
@@ -172,6 +188,8 @@ export function apply(ctx, config = {}) {
           timeoutMs: { type: 'number', required: true },
           durationMs: { type: 'number', required: true },
           sessionId: { oneOf: [{ type: 'string' }, { type: 'null' }], required: true },
+          threadSource: { oneOf: [{ type: 'string' }, { type: 'null' }], required: true },
+          tokensUsed: { oneOf: [{ type: 'number' }, { type: 'null' }], required: true },
           rolloutPath: { oneOf: [{ type: 'string' }, { type: 'null' }], required: true },
           filesChanged: { type: 'array', required: true, items: { type: 'string' } },
           briefBytes: { type: 'number', required: true },
@@ -199,11 +217,15 @@ export function apply(ctx, config = {}) {
       },
       render: (_args, value) => [{
         type: 'text',
-        text: renderCodexResult(value, {
-          projectDir: value.projectDir,
-          sandbox: value.sandbox,
-          model: value.model,
-        }),
+        // The app-server envelope already carries its own assembled transcript
+        // (answer + observed items + thread identity); exec mode is rendered here.
+        text: value.mode === 'app-server'
+          ? value.output.text
+          : renderCodexResult(value, {
+            projectDir: value.projectDir,
+            sandbox: value.sandbox,
+            model: value.model,
+          }),
       }],
     },
     async execute(args, exec) {
@@ -225,19 +247,32 @@ export function apply(ctx, config = {}) {
       const lastMessageFile = join(dotDsh, 'codex-last-message.md')
 
       const sandbox = args.sandbox ?? DEFAULT_CODEX_SANDBOX
+      const mode = args.mode ?? DEFAULT_CODEX_MODE
       const timeoutMs = args.timeoutMs ?? config.codexTimeoutMs ?? 1_800_000
-      const result = await runCodex({
+      const tailChars = config.outputTailChars ?? 20_000
+      const shared = {
         projectDir,
         promptFile,
         sandbox,
         model: args.model,
-        lastMessageFile,
         timeoutMs,
-        tailChars: config.outputTailChars ?? 20_000,
+        tailChars,
         signal: exec.signal,
-      })
+      }
+
+      let result
+      if (mode === 'exec') {
+        result = await runCodex({ ...shared, lastMessageFile })
+      } else {
+        result = await runCodexAppServer(shared)
+        // Keep the same on-disk artifact as exec mode: the architect's answer.
+        if (typeof result.answer === 'string' && result.answer.length > 0) {
+          await writeFile(lastMessageFile, result.answer, 'utf8')
+        }
+      }
 
       return {
+        mode,
         command: result.command,
         executable: result.executable,
         projectDir,
@@ -252,6 +287,8 @@ export function apply(ctx, config = {}) {
         timeoutMs: result.timeoutMs,
         durationMs: result.durationMs,
         sessionId: result.sessionId,
+        threadSource: result.threadSource ?? null,
+        tokensUsed: result.tokensUsed ?? null,
         rolloutPath: result.rolloutPath,
         filesChanged: result.filesChanged,
         briefBytes: Buffer.byteLength(brief, 'utf8'),

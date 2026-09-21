@@ -40,7 +40,7 @@
     "apiKeys": [],
     "permissions": {
       "filesystem": "mc_scaffold writes files under the user-specified targetDir only; mc_codex writes the architecture brief and the last-message file under <projectDir>/.dsh/; minecraft-preset may write the bundled agent presets into $DSH_HOME/.agent-presets on boot (skipped when already present)",
-      "subprocess": "mc_gradle executes gradlew inside the user-specified project directory; mc_codex runs the Codex CLI the user already installed, non-interactively, with <projectDir> as its working directory (only from the Minecraft 架构师 preset)"
+      "subprocess": "mc_gradle executes gradlew inside the user-specified project directory; mc_codex runs the Codex CLI the user already installed with <projectDir> as its working directory (only from the Minecraft 架构师 preset) — by default through the official `codex app-server --stdio` protocol, which creates a real Codex session visible in the Codex desktop app, or via `codex exec` when mode=exec is requested"
     },
     "jurisdiction": [],
     "retention": "none"

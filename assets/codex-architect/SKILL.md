@@ -19,16 +19,20 @@
 3. **完整输出回会话**：`mc_codex` 返回合并后的 stdout+stderr（头尾截断），不要用摘要替代它。
 4. **退出码 / 超时 / 用时**都要报。
 5. **改动文件清单**：`mc_codex` 返回 `filesChanged`，逐条报给用户。
-6. **会话可追溯**：`mc_codex` 返回 `sessionId` 与 `rolloutPath`。要说清两件事：① 这次 Codex 会话已经**持久化**在 `~/.codex/sessions/<年>/<月>/<日>/rollout-…-<sessionId>.jsonl`（直接打开就能看到 Codex 的完整过程）；② **Codex 桌面版的会话列表不显示 CLI（`source: exec`）线程**，所以别让用户去 App 侧边栏找——要继续这次会话得用命令行 `codex exec resume <sessionId> "…"`。
+6. **会话可追溯**：`mc_codex` 返回 `mode`、`sessionId`（= Codex 线程 id）、`threadSource`、`rolloutPath`、`tokensUsed`。要说清：
+   - `mode: "app-server"`（默认）：这次会话是**真正的 Codex 会话**，桌面版列表里**看得见、能续聊**；给出线程 id 与"在 App 里打开 / `codex resume <threadId>`"两种续接方式。
+   - `mode: "exec"`：会话持久化在 `~/.codex/sessions/<年>/<月>/<日>/rollout-…-<sessionId>.jsonl`（打开就能看全 Codex 过程），但 `source: exec` 的线程**桌面版列表不显示**，只能 `codex exec resume <sessionId> "…"`。
+   - 两种模式都报 `rolloutPath`（文件是真的，能直接读）。
 7. **不做隐藏重试**：失败就是失败，报告后由用户决定。
 8. **命令可复制**：把 `mc_codex` 返回的 `command` 原样贴出来，用户自己也能跑同一条命令。
 
 ## 2. 流程
 
 1. **分析**：按 `minecraft-intake` 把 版本/平台/加载器/核心/兼容/部署 核对清楚；如果用户没说全，先一次性问全，别猜。把功能需求整理成一段 `goal`（要具体：命令名、事件、权限、数据存储方式）。
-2. **让 Codex 做架构**：调用 `mc_codex`，参数：`projectDir`（项目绝对路径）、`goal`、`platform`、`minecraftVersion`（可选 `javaVersion`、`sandbox`、`model`）。
+2. **让 Codex 做架构**：调用 `mc_codex`，参数：`projectDir`（项目绝对路径）、`goal`、`platform`、`minecraftVersion`（可选 `javaVersion`、`sandbox`、`model`、`mode`）。
    - 架构步骤建议显式 `model: "deepseek-v4-pro"`（Cherry 里架构用的是 Opus，这边同等强度只有 v4-pro）；不传就跟随用户 Codex 原生模型。
    - `sandbox` 默认 `workspace-write`——架构师要能写文件。
+   - `mode` 默认 `app-server`（会话在 Codex 桌面版可见、可续聊，见第 6 节）；只有在 app-server 不可用或用户明确要求时才用 `exec`。
    - 追加一句：`args: ["-m", ...]` 不要自己拼，用 `model` 参数。
 3. **读交接物**：Codex 跑完后读两份东西——`<项目>/FILL-SPEC.md`（填充规范）和代码里的 `// [TODO: Agent B] ...` 标记。
 4. **填内容**：严格按 `references/coder-rules.md` 执行——只替换标记、不改签名/结构/接口；API 不确定就先加载对应平台技能（`minecraft-paper-plugin` / `minecraft-fabric-mod` / `minecraft-forge-mod` / `minecraft-neoforge-mod` / `minecraft-spigot-legacy`）及其 `references/api/*.md`。
@@ -57,15 +61,14 @@
 
 不要混用：**一旦走了 Codex 架构，就必须按 `[TODO: Agent B]` 标记协议填完**，不要改用 A–D 的 TODO 约定。
 
-## 6. 想让这次架构会话出现在 Codex 桌面版？（实测结论 + 唯一受支持的做法）
+## 6. 桌面版可见性（默认已解决；不要再走"让用户手动复制"的老路）
 
-**事实**（读 app-server 与桌面版代码确认）：`codex exec` 建的线程 `source = exec`、`originator = codex_exec`，而桌面版调用 `thread/list` 时带固定的 `sourceKinds` 白名单（只含它自己用的 `vscode`/`appServer` 一类），**服务端就不会返回 `exec`（连普通 `codex` TUI 的 `cli` 也不返回）**；桌面版里没有任何"显示 CLI 会话"的开关。所以要"在桌面版里看见"，只能**让架构这一步从桌面版发起**：
+**背景**（读 Codex 的 app-server 协议与桌面版代码确认）：`codex exec` 建的线程 `source = exec`、`originator = codex_exec`，桌面版调 `thread/list` 时带固定的 `sourceKinds` 白名单（只含 `vscode`/`appServer` 一类），**服务端根本不会返回 `exec` 线程**（连 `codex` TUI 的 `cli` 也不返回），App 里也没有"显示 CLI 会话"的开关。
 
-1. 你（DSH）把 `<项目>/.dsh/codex-architect.md` 写好（如果用 `mc_codex` 就已经写好了；也可以只让模型生成这份文件而不执行）；
-2. 让用户在 **Codex 桌面版**里新建一个线程、工作目录选该项目，把这份文件的内容粘进去（或直接说"按 `.dsh/codex-architect.md` 的要求做架构"）；
-3. 用户在桌面版里跑完，回来说一句"架构做完了"；
-4. 你从磁盘接手：读 `<项目>/FILL-SPEC.md` 与 `// [TODO: Agent B]` 标记 → 第 4、5 节照常填内容 + `mc_gradle` 验证。
+**现在的解法（`mc_codex` 默认就这么做）**：架构这一步不走 `codex exec`，而是通过官方 **`codex app-server --stdio`** 协议建线程（`thread/start` + `turn/start`）。这样建出来的线程 `source = vscode`、`originator = <clientInfo.name>`（即 `DeepSeek Harness`），**走进桌面版的默认列表**，实测 `thread/list {}` 能查到，用户可以在 App 里点开、续聊。
 
-这样会话在桌面版列表里可见、可续聊，而编码与验证仍然由 DSH 负责；交接物依旧是磁盘上的文件，和 `mc_codex` 路径完全兼容。
+- 想让会话可见/可续聊：**什么都不用做**，默认 `mode: "app-server"` 就是。
+- `mode: "exec"` 只在 app-server 路径不可用、或用户自己要求时用；此时按第 1 节第 6 条说明"桌面版看不到，用 `codex exec resume`"。
+- 需要用户在桌面版里**亲手操作**时（比如他要改 prompt 再跑），仍可用老办法：你把 `.dsh/codex-architect.md` 写好（或只生成不执行），让他在桌面版新建线程、工作目录选项目、把文件内容粘进去；跑完你从磁盘接手 `FILL-SPEC.md` + `[TODO: Agent B]`。
 
-不建议的做法：直接改 `~/.codex/state_5.sqlite` 里的 `source`/`originator`。——实测 rollout 的 `session_meta` 写死了 `"originator":"codex_exec"`，而桌面版有 rollout 回填机制（`rollout_migration_state`/`backfill_state`），改了可能被覆盖，且 App 运行中持有该库。若用户坚持要试，先关掉桌面版、备份 DB 与 `.codex-global-state.json` 再动。
+不建议的做法：直接改 `~/.codex/state_5.sqlite` 里的 `source`/`originator`。——实测 rollout 的 `session_meta` 写死了 `"originator":"codex_exec"`，而桌面版有 rollout 回填机制（`rollout_migration_state`/`backfill_state`），改了可能被覆盖，且 App 运行中持有该库。走 app-server 才是有协议支持的路子。

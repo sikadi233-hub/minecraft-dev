@@ -25,7 +25,7 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 |---|---|
 | `mc_scaffold` | 一句话创建完整可构建项目：paper / fabric / forge / neoforge / spigot 五平台，自动配好构建脚本、主类、元数据、**时代对应的 Gradle wrapper** |
 | `mc_gradle` | 在项目里跑 `gradlew <task>`：终端卡片显示、超时自动杀进程树、输出头尾截断、非零退出码不报错而是可读呈现 |
-| `mc_codex` | **只在「Minecraft 架构师」预设里可用**：把架构 brief 写到 `<项目>/.dsh/codex-architect.md`，再用**你自己的 Codex CLI** 跑一次完全可见的 `codex exec`；命令、完整输出、退出码、用时、改动文件、会话 id 全部回到会话里 |
+| `mc_codex` | **只在「Minecraft 架构师」预设里可用**：把架构 brief 写到 `<项目>/.dsh/codex-architect.md`，再用**你自己的 Codex CLI** 跑一次完全可见的架构会话——默认走官方 `codex app-server --stdio` 协议（**会话会出现在 Codex 桌面版列表里、可续聊**），也可 `mode: "exec"` 退回 `codex exec`；命令、完整输出、退出码、用时、改动文件、会话 id/线程 id、rollout 路径、token 用量全部回到会话里 |
 
 ### 4 个内置子代理（v0.5.0，四子代理团队）
 
@@ -50,20 +50,23 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 分工照搬 Cherry Studio 里的 Architect / Coder 两个智能体（`// [TODO: Agent B] 描述` 标记就是交接协议）：
 
 1. DSH 先按 `minecraft-intake` 把版本/平台/加载器核对清楚，整理成一段 `goal`；
-2. 点名后调用 `mc_codex`：它把架构 brief 写到 `<项目>/.dsh/codex-architect.md`（**可读可改**），然后在项目目录里跑
+2. 点名后调用 `mc_codex`：它把架构 brief 写到 `<项目>/.dsh/codex-architect.md`（**可读可改**），然后用**你自己的 Codex**在项目目录里跑一次架构会话。默认 `mode: "app-server"`，实际执行的是
+   `"…codex.exe" app-server --stdio`
+   协议（`thread/start` + `turn/start`，prompt 就是那个文件的内容）——这条命令原样回显在会话里；`mode: "exec"` 时则是
    `"…codex.exe" exec - -C "<项目>" -s workspace-write --skip-git-repo-check -o "<项目>/.dsh/codex-last-message.md" < "<项目>/.dsh/codex-architect.md"`
-   —— 这条命令原样回显在会话里，你也可以自己复制去跑；
 3. Codex 只写骨架：接口/签名/build 脚本/资源模板/主类注册，所有业务逻辑方法体留 `// [TODO: Agent B] 描述`，并额外产出 `FILL-SPEC.md`（标记位置 × 方法契约 × 构建命令 × UNVERIFIED 清单 × 完成判据）；
 4. DSH 只替换这些标记（不动签名/结构/接口），最后用 `mc_gradle` 跑到 build exitCode 0，并确认标记计数为 0。
 
-**透明度**（本预设的硬要求）：执行前先声明这一步会消耗**你自己的 Codex**（订阅账号计入 Codex 用量窗口；API key 计入余额），而且 DSH 侧不会显示这笔消耗；返回完整合并输出、退出码、用时、改动文件清单、会话 id **和 rollout 文件路径**；失败不静默重试，委派次数上限为「架构 1 次 + 修复 ≤1 次」。
+**透明度**（本预设的硬要求）：执行前先声明这一步会消耗**你自己的 Codex**（订阅账号计入 Codex 用量窗口；API key 计入余额），而且 DSH 侧不会显示这笔消耗；返回完整输出、退出码、用时、改动文件清单、会话/线程 id、rollout 文件路径与 token 用量（从 rollout 的 `token_count` 事件读，源码写的是 `turn/completed` 不带 usage）；失败不静默重试，委派次数上限为「架构 1 次 + 修复 ≤1 次」。
 
-**关于"我在 Codex 里看不到这次会话"（实测结论）**：`mc_codex` 不加 `--ephemeral`，所以每次运行都**持久化**在 `~/.codex/sessions/<年>/<月>/<日>/rollout-…-<sessionId>.jsonl`（`mc_codex` 会把这条路径直接报给你），App 的数据库里也有这条线程；但它的 `source` 是 `exec`、`originator` 是 `codex_exec`，而 **Codex 桌面版只列它自己创建的线程**（实测：桌面版调 `thread/list` 时带固定的 `sourceKinds` 白名单，app-server 默认就不会返回 `exec`，连普通 `codex` TUI 的 `cli` 也不返回），因此不会出现在"最近"里。要查看/继续/让它可见：
-- 看内容：直接打开那个 rollout JSONL（Codex 的完整过程都在里面）；
-- 继续对话：命令行 `codex exec resume <sessionId> "…"`（已验证该子命令存在，用法 `codex exec resume [OPTIONS] [SESSION_ID] [PROMPT]`）；
-- **想在桌面版里看见（唯一受支持的做法）**：让架构这一步从桌面版发起——先写好 `<项目>/.dsh/codex-architect.md`（可以只生成不执行），你在 Codex 桌面版新建线程、工作目录选该项目、把内容粘进去跑完，再回来说"架构做完了"，DSH 就从磁盘上的 `FILL-SPEC.md` 与 `[TODO: Agent B]` 标记接手填内容并验证。桌面版没有任何"显示 CLI 会话"的开关；直接改 `state_5.sqlite` 的 `source`/`originator` 不被支持——rollout 的 `session_meta` 写死了 `codex_exec`，桌面版的 rollout 回填可能把它改回去。
+**关于"这次会话在 Codex 桌面版里看得见吗"（实测结论）**：默认的 `mode: "app-server"` **看得见**——app-server 建的线程是 `source = vscode`、`originator = DeepSeek Harness`，实测跑完立刻能被桌面版用的 `thread/list {}` 查到（同一条 App 侧边栏查询只会返回 `vscode`/`appServer` 一类，不返回 `exec`/`cli`），所以你可以直接在 App 里点开续聊，或在命令行 `codex resume <threadId>`。两种模式都会把内容**持久化**在 `~/.codex/sessions/<年>/<月>/<日>/rollout-…-<id>.jsonl`（`mc_codex` 直接回报这条路径，打开就是 Codex 的完整过程）：
 
-**前提**：只需要本机装着 Codex（桌面版会顺带提供 CLI；`mc_codex` 会自己探测 PATH、`~/.codex/plugins/.plugin-appserver/`、`%LOCALAPPDATA%\OpenAI\Codex\bin\<hash>\` 三处）。**不用打开 Codex 桌面版**——每次都 spawn 一个非交互会话。Codex 探不到/跑失败时，本预设会退回普通做法（自己写或走 A–D 链），并且**绝不留下 `[TODO: Agent B]` 标记**。
+- `mode: "app-server"`（默认）：桌面版列表可见、可续聊；续接用 `codex resume <threadId>`。
+- `mode: "exec"`：`source = exec`、`originator = codex_exec`，**桌面版列表不会显示**（App 里没有"显示 CLI 会话"的开关）；此时用 `codex exec resume <sessionId> "…"` 续接。
+- 想让架构这一步由你**亲手在桌面版里操作**（例如先改 prompt）：把 `.dsh/codex-architect.md` 写好（可只生成不执行），在桌面版新建线程、工作目录选该项目、把内容粘进去跑完，再回来说"架构做完了"，DSH 就从磁盘上的 `FILL-SPEC.md` 与 `[TODO: Agent B]` 标记接手。
+- 不建议直接改 `state_5.sqlite` 的 `source`/`originator`：rollout 的 `session_meta` 写死了 `codex_exec`，桌面版的 rollout 回填（`rollout_migration_state`/`backfill_state`）可能把它改回去，且 App 运行时持有该库。
+
+**前提**：只需要本机装着 Codex（桌面版会顺带提供 CLI；`mc_codex` 会自己探测 PATH、`~/.codex/plugins/.plugin-appserver/`、`%LOCALAPPDATA%\OpenAI\Codex\bin\<hash>\` 三处）。**不用打开 Codex 桌面版**——每次都 spawn 一个非交互会话；app-server 模式下的会话结束后会出现在桌面版列表里（想看就开，不想看也不用开）。Codex 探不到/跑失败时，本预设会退回普通做法（自己写或走 A–D 链），并且**绝不留下 `[TODO: Agent B]` 标记**。
 
 ## 安装
 
@@ -242,5 +245,6 @@ npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BR
 - `preset.yml` 用严格 YAML 解析（js-yaml）：`name`/`description` 里出现 `[`、`]`、`: ` 等必须**加引号**，否则整个元数据块被丢弃，预设会显示成无名且没有 roster 顺序（v0.8.0 开发中踩过：未加引号的 `[TODO: Agent B]`）。
 - `mc_codex` 的 `filesChanged` 是按 mtime 扫描项目目录得出的（已跳过 `.dsh/.git/node_modules/build/...`），因此可能包含子进程自己产生的临时文件（例如 PowerShell 的 `ModuleAnalysisCache`）——这是如实报告，不是项目文件清单。
 - `mc_codex` 用的是**你自己账号的 Codex**，DSH 不会显示这笔消耗（订阅计入用量窗口 / API key 计入余额）；技能因此把委派上限写死为「架构 1 次 + 修复 ≤1 次」，且失败不自动重试。
-- `mc_codex` 走 `cmd.exe /d /s /c` + stdin 重定向（POSIX 走 `/bin/sh -c`）：卡片显示的命令**就是**实际执行的命令；Codex 自身报错（鉴权/额度/网络）会原样回显，不做归类改写。
-- **CLI 会话不进 Codex 桌面版列表（实测）**：`codex exec` 线程在 `state_5.sqlite` 里是 `source='exec'`、`has_user_event=0`，而桌面版侧边栏只列 App 自己创建的线程，所以 App 里找不到。`mc_codex` 因此额外回报 `rolloutPath`；要继续该会话用 `codex exec resume <id> "…"`。目前没有受支持的开关能让这些线程出现在 App 列表里（直接改 App 的 sqlite 属于未支持做法，不建议）。
+- `mc_codex` 的 `mode: "app-server"` 走官方 `codex app-server --stdio`（NDJSON JSON-RPC：`initialize` → `initialized` → `thread/start` → `turn/start` → `turn/completed`），**不经过 shell**，所以卡片上的命令是 `"…codex.exe" app-server --stdio`，实际交互是协议而非命令行；prompt 仍然原样放进 `turn/start` 的一个 text input，内容就是 `.dsh/codex-architect.md`。`mode: "exec"` 则走 `cmd.exe /d /s /c` + stdin 重定向（POSIX 走 `/bin/sh -c`）：卡片显示的命令**就是**实际执行的命令。两种模式下 Codex 自身报错（鉴权/额度/网络）都会原样回显，不做归类改写。
+- **app-server 模式的两条协议细节（实测，0.155.0-alpha.9.2）**：① `turn/completed` **不带** usage，token 总量只能从 rollout 的 `event_msg`/`token_count`/`info.total_token_usage.total_tokens` 读，所以 `mc_codex` 会自己去读那个文件的尾部；② 线程的 `source` 由 app-server 协议决定（实测为 `vscode`，`originator` = 客户端名 `DeepSeek Harness`），**不能用参数指定**（`sessionStartSource` 只接受 `startup`/`clear`，`codex exec resume --thread-source vscode` 也不会改已有线程的 source）。
+- **CLI 会话不进 Codex 桌面版列表（实测）**：`codex exec` 线程在 `state_5.sqlite` 里是 `source='exec'`、`has_user_event=0`，而桌面版侧边栏的 `thread/list` 带固定 `sourceKinds` 白名单（只含 `vscode`/`appServer` 一类），所以 App 里找不到；这也是 `mc_codex` 默认改用 app-server 模式的原因——该模式下线程是 `source='vscode'`，实测跑完立刻出现在默认 `thread/list` 结果里。`mode: "exec"` 时仍额外回报 `rolloutPath`，续接用 `codex exec resume <id> "…"`。
