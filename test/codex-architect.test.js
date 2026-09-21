@@ -52,6 +52,7 @@ test('the skill body carries the gate, the transparency rules and the delegation
     'codex exec resume',
     '.dsh/codex-architect.md',
     '探不到 Codex',
+    '桌面版',
     '架构委派最多 1 次',
     'DSH 侧不会显示这笔消耗',
     'subagent_mc_plan',

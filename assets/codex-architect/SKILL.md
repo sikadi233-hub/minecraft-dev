@@ -56,3 +56,16 @@
 - 用户没点名，或 Codex 不可用 → 用 A–D 链或直接自己做。
 
 不要混用：**一旦走了 Codex 架构，就必须按 `[TODO: Agent B]` 标记协议填完**，不要改用 A–D 的 TODO 约定。
+
+## 6. 想让这次架构会话出现在 Codex 桌面版？（实测结论 + 唯一受支持的做法）
+
+**事实**（读 app-server 与桌面版代码确认）：`codex exec` 建的线程 `source = exec`、`originator = codex_exec`，而桌面版调用 `thread/list` 时带固定的 `sourceKinds` 白名单（只含它自己用的 `vscode`/`appServer` 一类），**服务端就不会返回 `exec`（连普通 `codex` TUI 的 `cli` 也不返回）**；桌面版里没有任何"显示 CLI 会话"的开关。所以要"在桌面版里看见"，只能**让架构这一步从桌面版发起**：
+
+1. 你（DSH）把 `<项目>/.dsh/codex-architect.md` 写好（如果用 `mc_codex` 就已经写好了；也可以只让模型生成这份文件而不执行）；
+2. 让用户在 **Codex 桌面版**里新建一个线程、工作目录选该项目，把这份文件的内容粘进去（或直接说"按 `.dsh/codex-architect.md` 的要求做架构"）；
+3. 用户在桌面版里跑完，回来说一句"架构做完了"；
+4. 你从磁盘接手：读 `<项目>/FILL-SPEC.md` 与 `// [TODO: Agent B]` 标记 → 第 4、5 节照常填内容 + `mc_gradle` 验证。
+
+这样会话在桌面版列表里可见、可续聊，而编码与验证仍然由 DSH 负责；交接物依旧是磁盘上的文件，和 `mc_codex` 路径完全兼容。
+
+不建议的做法：直接改 `~/.codex/state_5.sqlite` 里的 `source`/`originator`。——实测 rollout 的 `session_meta` 写死了 `"originator":"codex_exec"`，而桌面版有 rollout 回填机制（`rollout_migration_state`/`backfill_state`），改了可能被覆盖，且 App 运行中持有该库。若用户坚持要试，先关掉桌面版、备份 DB 与 `.codex-global-state.json` 再动。

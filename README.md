@@ -58,9 +58,10 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 
 **透明度**（本预设的硬要求）：执行前先声明这一步会消耗**你自己的 Codex**（订阅账号计入 Codex 用量窗口；API key 计入余额），而且 DSH 侧不会显示这笔消耗；返回完整合并输出、退出码、用时、改动文件清单、会话 id **和 rollout 文件路径**；失败不静默重试，委派次数上限为「架构 1 次 + 修复 ≤1 次」。
 
-**关于"我在 Codex 里看不到这次会话"（实测结论）**：`mc_codex` 不加 `--ephemeral`，所以每次运行都**持久化**在 `~/.codex/sessions/<年>/<月>/<日>/rollout-…-<sessionId>.jsonl`（`mc_codex` 会把这条路径直接报给你），App 的数据库里也有这条线程；但它的 `source` 是 `exec`，而 **Codex 桌面版侧边栏只列它自己创建的线程**，因此不会出现在"最近"里。要查看/继续这次会话：
+**关于"我在 Codex 里看不到这次会话"（实测结论）**：`mc_codex` 不加 `--ephemeral`，所以每次运行都**持久化**在 `~/.codex/sessions/<年>/<月>/<日>/rollout-…-<sessionId>.jsonl`（`mc_codex` 会把这条路径直接报给你），App 的数据库里也有这条线程；但它的 `source` 是 `exec`、`originator` 是 `codex_exec`，而 **Codex 桌面版只列它自己创建的线程**（实测：桌面版调 `thread/list` 时带固定的 `sourceKinds` 白名单，app-server 默认就不会返回 `exec`，连普通 `codex` TUI 的 `cli` 也不返回），因此不会出现在"最近"里。要查看/继续/让它可见：
 - 看内容：直接打开那个 rollout JSONL（Codex 的完整过程都在里面）；
-- 继续对话：命令行 `codex exec resume <sessionId> "…"`（已验证该子命令存在，用法 `codex exec resume [OPTIONS] [SESSION_ID] [PROMPT]`）。
+- 继续对话：命令行 `codex exec resume <sessionId> "…"`（已验证该子命令存在，用法 `codex exec resume [OPTIONS] [SESSION_ID] [PROMPT]`）；
+- **想在桌面版里看见（唯一受支持的做法）**：让架构这一步从桌面版发起——先写好 `<项目>/.dsh/codex-architect.md`（可以只生成不执行），你在 Codex 桌面版新建线程、工作目录选该项目、把内容粘进去跑完，再回来说"架构做完了"，DSH 就从磁盘上的 `FILL-SPEC.md` 与 `[TODO: Agent B]` 标记接手填内容并验证。桌面版没有任何"显示 CLI 会话"的开关；直接改 `state_5.sqlite` 的 `source`/`originator` 不被支持——rollout 的 `session_meta` 写死了 `codex_exec`，桌面版的 rollout 回填可能把它改回去。
 
 **前提**：只需要本机装着 Codex（桌面版会顺带提供 CLI；`mc_codex` 会自己探测 PATH、`~/.codex/plugins/.plugin-appserver/`、`%LOCALAPPDATA%\OpenAI\Codex\bin\<hash>\` 三处）。**不用打开 Codex 桌面版**——每次都 spawn 一个非交互会话。Codex 探不到/跑失败时，本预设会退回普通做法（自己写或走 A–D 链），并且**绝不留下 `[TODO: Agent B]` 标记**。
 
