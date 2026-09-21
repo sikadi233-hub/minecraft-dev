@@ -9,6 +9,7 @@ import {
   codexArgv,
   extractSessionId,
   findCodexExecutable,
+  findRolloutPath,
   renderCodexResult,
   runCodex,
   scanChangedFiles,
@@ -176,6 +177,7 @@ test('renderCodexResult shows the command, the output, the changed files and the
     timeoutMs: 1000,
     durationMs: 12_300,
     sessionId: '01a0c4a6-9298-7a12-b9ca-3a8ae815fa30',
+    rolloutPath: 'C:\\Users\\tester\\.codex\\sessions\\2026\\09\\22\\rollout-2026-09-22T02-26-53-01a0c4a6-9298-7a12-b9ca-3a8ae815fa30.jsonl',
     filesChanged: ['src/Main.java', 'build.gradle.kts'],
     output: { text: 'skeleton written', truncated: false },
   }
@@ -185,7 +187,10 @@ test('renderCodexResult shows the command, the output, the changed files and the
   assert.match(text, /model: deepseek-v4-pro/)
   assert.match(text, /skeleton written/)
   assert.match(text, /files changed \(2\): src\/Main\.java, build\.gradle\.kts/)
-  assert.match(text, /codex resume 01a0c4a6-9298-7a12-b9ca-3a8ae815fa30/)
+  assert.match(text, /codex exec resume 01a0c4a6-9298-7a12-b9ca-3a8ae815fa30/)
+  // The app sidebar hides `source: exec` threads, so the rollout path is how a
+  // user actually finds the run.
+  assert.match(text, /rollout: C:\\Users\\tester\\\.codex\\sessions\\2026\\09\\22\\rollout-.*\.jsonl \(not listed in the Codex app sidebar\)/)
   assert.match(text, /duration: 12\.3s/)
 })
 
@@ -203,10 +208,28 @@ test('renderCodexResult says so when nothing changed and no session id was seen'
   }
   const text = renderCodexResult(result, { projectDir: 'C:\\p', sandbox: 'read-only' })
   assert.match(text, /files changed: none detected/)
-  assert.doesNotMatch(text, /codex resume/)
+  assert.doesNotMatch(text, /codex exec resume/)
+  assert.doesNotMatch(text, /rollout:/)
   assert.match(text, /model: native Codex setting/)
   assert.match(text, /\(codex produced no output\)/)
   assert.match(text, /\n\[exit code: 2\]$/)
+})
+
+test('findRolloutPath locates the persisted rollout for a session id', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'mc-codex-rollouts-'))
+  const id = '01a0c538-8e50-7830-9171-6055bedcf5c8'
+  try {
+    const day = join(root, '2026', '09', '22')
+    await mkdir(day, { recursive: true })
+    const file = join(day, `rollout-2026-09-22T02-26-53-${id}.jsonl`)
+    await writeFile(file, '{}\n')
+    assert.equal(await findRolloutPath(id, { sessionsRoot: root }), file)
+    assert.equal(await findRolloutPath('01a0dead-beef-0000-0000-000000000000', { sessionsRoot: root }), null)
+    assert.equal(await findRolloutPath('', { sessionsRoot: root }), null)
+    assert.equal(await findRolloutPath(id, { sessionsRoot: join(root, 'nope') }), null)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
 })
 
 // ---------------------------------------------------------------------------
@@ -250,6 +273,8 @@ test('runCodex runs the discovered executable with the file cwd and returns the 
       spawnImpl: (program, args, options) => { calls.push({ program, args, options }); return child },
       discovery: { home: 'C:\\Users\\tester', env: { PATH: 'C:\\tools' }, exists: p => p === 'C:\\tools\\codex.exe', listDir: () => [] },
       scanFiles: () => ['a.java'],
+      // Never scan the real ~/.codex from a unit test.
+      rolloutRoot: join(tmpdir(), 'mc-codex-no-such-rollouts'),
     },
   })
   for (const fn of stdout) fn(Buffer.from('session id: 01a0c4a6-9298-7a12-b9ca-3a8ae815fa30\nskeleton written\n'))
@@ -262,6 +287,7 @@ test('runCodex runs the discovered executable with the file cwd and returns the 
   assert.equal(result.executable, 'C:\\tools\\codex.exe')
   assert.equal(result.executableSource, 'PATH')
   assert.equal(result.sessionId, '01a0c4a6-9298-7a12-b9ca-3a8ae815fa30')
+  assert.equal(result.rolloutPath, null)
   assert.deepEqual(result.filesChanged, ['a.java'])
   assert.match(result.command, /codex\.exe" exec - -C "C:\\p"/)
   assert.equal(typeof result.durationMs, 'number')

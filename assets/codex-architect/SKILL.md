@@ -19,7 +19,7 @@
 3. **完整输出回会话**：`mc_codex` 返回合并后的 stdout+stderr（头尾截断），不要用摘要替代它。
 4. **退出码 / 超时 / 用时**都要报。
 5. **改动文件清单**：`mc_codex` 返回 `filesChanged`，逐条报给用户。
-6. **会话可接管**：`mc_codex` 返回 `sessionId`；告诉用户可以用 `codex resume <sessionId>` 在 Codex 里打开同一次会话查看/接管。
+6. **会话可追溯**：`mc_codex` 返回 `sessionId` 与 `rolloutPath`。要说清两件事：① 这次 Codex 会话已经**持久化**在 `~/.codex/sessions/<年>/<月>/<日>/rollout-…-<sessionId>.jsonl`（直接打开就能看到 Codex 的完整过程）；② **Codex 桌面版的会话列表不显示 CLI（`source: exec`）线程**，所以别让用户去 App 侧边栏找——要继续这次会话得用命令行 `codex exec resume <sessionId> "…"`。
 7. **不做隐藏重试**：失败就是失败，报告后由用户决定。
 8. **命令可复制**：把 `mc_codex` 返回的 `command` 原样贴出来，用户自己也能跑同一条命令。
 

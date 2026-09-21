@@ -172,6 +172,7 @@ export function apply(ctx, config = {}) {
           timeoutMs: { type: 'number', required: true },
           durationMs: { type: 'number', required: true },
           sessionId: { oneOf: [{ type: 'string' }, { type: 'null' }], required: true },
+          rolloutPath: { oneOf: [{ type: 'string' }, { type: 'null' }], required: true },
           filesChanged: { type: 'array', required: true, items: { type: 'string' } },
           briefBytes: { type: 'number', required: true },
           target: {
@@ -251,6 +252,7 @@ export function apply(ctx, config = {}) {
         timeoutMs: result.timeoutMs,
         durationMs: result.durationMs,
         sessionId: result.sessionId,
+        rolloutPath: result.rolloutPath,
         filesChanged: result.filesChanged,
         briefBytes: Buffer.byteLength(brief, 'utf8'),
         target: {

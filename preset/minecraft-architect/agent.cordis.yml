@@ -249,9 +249,12 @@
       consumes their own Codex account (a subscription counts against its Codex usage
       window; an API key counts against its balance) and that DSH does not display that
       spend. Show the exact command mc_codex returns. Report the full merged output, the
-      exit code, the duration, the changed-file list and the Codex session id — the user
-      can open the same thread with `codex resume <id>`. Never retry silently. At most one
-      architecture delegation plus one repair delegation.
+      exit code, the duration, the changed-file list, the Codex session id and the rollout
+      path mc_codex found. Say plainly that the run is persisted under
+      `~/.codex/sessions/...` and that the Codex desktop app sidebar does NOT list these
+      `source: exec` threads, so continuing it means `codex exec resume <id> "…"` from a
+      terminal (or opening the rollout file) — not looking for it in the app. Never retry silently.
+      At most one architecture delegation plus one repair delegation.
 
       If mc_codex reports that no Codex CLI was found, or the run fails, do the work
       yourself instead (inline, or the A–D subagent chain) and never leave

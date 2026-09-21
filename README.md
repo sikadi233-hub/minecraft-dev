@@ -56,7 +56,11 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 3. Codex 只写骨架：接口/签名/build 脚本/资源模板/主类注册，所有业务逻辑方法体留 `// [TODO: Agent B] 描述`，并额外产出 `FILL-SPEC.md`（标记位置 × 方法契约 × 构建命令 × UNVERIFIED 清单 × 完成判据）；
 4. DSH 只替换这些标记（不动签名/结构/接口），最后用 `mc_gradle` 跑到 build exitCode 0，并确认标记计数为 0。
 
-**透明度**（本预设的硬要求）：执行前先声明这一步会消耗**你自己的 Codex**（订阅账号计入 Codex 用量窗口；API key 计入余额），而且 DSH 侧不会显示这笔消耗；返回完整合并输出、退出码、用时、改动文件清单；**不使用 `--ephemeral`**，所以可以用 `codex resume <会话id>` 在 Codex 里打开同一次会话接管/复查；失败不静默重试，委派次数上限为「架构 1 次 + 修复 ≤1 次」。
+**透明度**（本预设的硬要求）：执行前先声明这一步会消耗**你自己的 Codex**（订阅账号计入 Codex 用量窗口；API key 计入余额），而且 DSH 侧不会显示这笔消耗；返回完整合并输出、退出码、用时、改动文件清单、会话 id **和 rollout 文件路径**；失败不静默重试，委派次数上限为「架构 1 次 + 修复 ≤1 次」。
+
+**关于"我在 Codex 里看不到这次会话"（实测结论）**：`mc_codex` 不加 `--ephemeral`，所以每次运行都**持久化**在 `~/.codex/sessions/<年>/<月>/<日>/rollout-…-<sessionId>.jsonl`（`mc_codex` 会把这条路径直接报给你），App 的数据库里也有这条线程；但它的 `source` 是 `exec`，而 **Codex 桌面版侧边栏只列它自己创建的线程**，因此不会出现在"最近"里。要查看/继续这次会话：
+- 看内容：直接打开那个 rollout JSONL（Codex 的完整过程都在里面）；
+- 继续对话：命令行 `codex exec resume <sessionId> "…"`（已验证该子命令存在，用法 `codex exec resume [OPTIONS] [SESSION_ID] [PROMPT]`）。
 
 **前提**：只需要本机装着 Codex（桌面版会顺带提供 CLI；`mc_codex` 会自己探测 PATH、`~/.codex/plugins/.plugin-appserver/`、`%LOCALAPPDATA%\OpenAI\Codex\bin\<hash>\` 三处）。**不用打开 Codex 桌面版**——每次都 spawn 一个非交互会话。Codex 探不到/跑失败时，本预设会退回普通做法（自己写或走 A–D 链），并且**绝不留下 `[TODO: Agent B]` 标记**。
 
@@ -238,3 +242,4 @@ npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BR
 - `mc_codex` 的 `filesChanged` 是按 mtime 扫描项目目录得出的（已跳过 `.dsh/.git/node_modules/build/...`），因此可能包含子进程自己产生的临时文件（例如 PowerShell 的 `ModuleAnalysisCache`）——这是如实报告，不是项目文件清单。
 - `mc_codex` 用的是**你自己账号的 Codex**，DSH 不会显示这笔消耗（订阅计入用量窗口 / API key 计入余额）；技能因此把委派上限写死为「架构 1 次 + 修复 ≤1 次」，且失败不自动重试。
 - `mc_codex` 走 `cmd.exe /d /s /c` + stdin 重定向（POSIX 走 `/bin/sh -c`）：卡片显示的命令**就是**实际执行的命令；Codex 自身报错（鉴权/额度/网络）会原样回显，不做归类改写。
+- **CLI 会话不进 Codex 桌面版列表（实测）**：`codex exec` 线程在 `state_5.sqlite` 里是 `source='exec'`、`has_user_event=0`，而桌面版侧边栏只列 App 自己创建的线程，所以 App 里找不到。`mc_codex` 因此额外回报 `rolloutPath`；要继续该会话用 `codex exec resume <id> "…"`。目前没有受支持的开关能让这些线程出现在 App 列表里（直接改 App 的 sqlite 属于未支持做法，不建议）。

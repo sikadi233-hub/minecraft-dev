@@ -89,7 +89,7 @@ test('the persona delta states the gate and the transparency rules', async () =>
     'minecraft-codex-architect',
     '// [TODO: Agent B]',
     'FILL-SPEC.md',
-    'codex resume',
+    'codex exec resume',
     'Never retry silently',
     'do the work\n      yourself instead',
   ]) {

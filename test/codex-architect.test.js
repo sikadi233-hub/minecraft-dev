@@ -49,7 +49,7 @@ test('the skill body carries the gate, the transparency rules and the delegation
   const skill = await read('SKILL.md')
   for (const required of [
     'mc_codex',
-    'codex resume',
+    'codex exec resume',
     '.dsh/codex-architect.md',
     '探不到 Codex',
     '架构委派最多 1 次',
