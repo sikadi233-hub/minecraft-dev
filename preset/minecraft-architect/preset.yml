@@ -1,0 +1,3 @@
+name: "Minecraft 架构师（Astra神的瞥视）"
+description: "在 Minecraft 专家预设之上增加 Codex（Astra）架构分工：用你自己装好的 Codex CLI 写项目框架，并留下 [TODO: Agent B] 标记与 FILL-SPEC.md；DSH 负责填内容与构建验证。命令、输出、改动文件、会话 id 全程公开，可 codex resume 接管。"
+order: 6

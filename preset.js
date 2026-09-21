@@ -1,15 +1,22 @@
 /**
- * Boot-time agent-preset installer plugin (`minecraft-preset`, v0.6.0).
+ * Boot-time agent-preset installer plugin (`minecraft-preset`; two presets
+ * since v0.8.0).
  *
  * `dsh plugin add` installs the cordis plugin rows (skills / tools / the
- * four-subagent team) but nothing moves the bundled "Minecraft expert" agent
- * preset into the harness-home preset root the roster actually scans
+ * four-subagent team) but nothing moves the bundled agent presets into the
+ * harness-home preset root the roster actually scans
  * (`$DSH_HOME/.agent-presets/`). This entry closes that gap at plugin mount:
- * every dsh boot after the install places the preset where discovery looks,
+ * every dsh boot after the install places both presets where discovery looks,
  * so a fresh install needs no manual copy step at all.
  *
+ * The shipped presets are:
+ * - `minecraft` — the Minecraft expert (unchanged since v0.7, byte-for-byte).
+ * - `minecraft-architect` — the expert plus the Codex(Astra) architecture
+ *   handoff: the `mc_codex` tool and the `minecraft-codex-architect` skill,
+ *   both mounted by that preset alone.
+ *
  * Safe by construction: an existing composition is never overwritten (local
- * edits win), the copy is two small files, and the whole feature can be
+ * edits win), each preset is two small files, and the whole feature can be
  * disabled with `autoInstallPreset: false` in the plugin config.
  * @module minecraft-dev/preset
  */
@@ -29,24 +36,30 @@ export const Config = Schema.object({
   autoInstallPreset: Schema.boolean().default(true),
 })
 
-/** The preset directory bundled with this package. */
-const SRC_DIR = fileURLToPath(new URL('./preset/minecraft/', import.meta.url))
+/** The presets bundled with this package, in install order. */
+export const BUNDLED_PRESETS = [
+  { id: 'minecraft', srcDir: fileURLToPath(new URL('./preset/minecraft/', import.meta.url)) },
+  { id: 'minecraft-architect', srcDir: fileURLToPath(new URL('./preset/minecraft-architect/', import.meta.url)) },
+]
 
 /**
- * Install the bundled preset on boot. Never throws into the boot path: a
+ * Install every bundled preset on boot. Never throws into the boot path: a
  * failure is logged as a warning so a read-only home or an odd deployment
- * cannot take the server down.
+ * cannot take the server down, and one broken preset cannot block the other.
  */
 export async function apply(ctx, config = {}) {
   if (config.autoInstallPreset === false) return
   const logger = ctx.logger ?? console
-  try {
-    await ensurePresetInstalled({
-      srcDir: SRC_DIR,
-      log: (msg) => logger.info(msg),
-      debug: (msg) => logger.debug(msg),
-    })
-  } catch (error) {
-    logger.warn(`minecraft-preset: could not auto-install the agent preset: ${error.message}`)
+  for (const { id, srcDir } of BUNDLED_PRESETS) {
+    try {
+      await ensurePresetInstalled({
+        srcDir,
+        presetId: id,
+        log: (msg) => logger.info(msg),
+        debug: (msg) => logger.debug(msg),
+      })
+    } catch (error) {
+      logger.warn(`minecraft-preset: could not auto-install agent preset '${id}': ${error.message}`)
+    }
   }
 }

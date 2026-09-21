@@ -19,12 +19,13 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 | `minecraft-major-mods` | 大型模组附属开发：28 个模组条目（1.7.10×10 / 1.12.2×8 / 现代×10，含拔刀剑、神秘时代、匠魂、植物魔法、Create、Botania、AE2、Mekanism、Curios、JEI/REI 等），每条含核实过的 curse.maven 坐标与扩展点 |
 | `minecraft-intake` | **任务信息核对（v0.7）**：用户请求写插件/mod/附属但信息不足时，按场景批量提问（版本/平台/加载器/核心/混合端/兼容性/部署），一次问全、不重复问、授权默认 |
 
-### 2 个工具
+### 3 个工具
 
 | 工具 | 用途 |
 |---|---|
 | `mc_scaffold` | 一句话创建完整可构建项目：paper / fabric / forge / neoforge / spigot 五平台，自动配好构建脚本、主类、元数据、**时代对应的 Gradle wrapper** |
 | `mc_gradle` | 在项目里跑 `gradlew <task>`：终端卡片显示、超时自动杀进程树、输出头尾截断、非零退出码不报错而是可读呈现 |
+| `mc_codex` | **只在「Minecraft 架构师」预设里可用**：把架构 brief 写到 `<项目>/.dsh/codex-architect.md`，再用**你自己的 Codex CLI** 跑一次完全可见的 `codex exec`；命令、完整输出、退出码、用时、改动文件、会话 id 全部回到会话里 |
 
 ### 4 个内置子代理（v0.5.0，四子代理团队）
 
@@ -37,11 +38,27 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 
 （注：4 个子代理为宿主层工具，任何 preset 会话可见；使用说明见 Minecraft 专家 preset persona。）
 
-### 1 个 Agent 预设
+### 2 个 Agent 预设
 
 | 预设 | 内容 |
 |---|---|
-| `minecraft`（Minecraft 专家） | 一键切换的专精 agent：standard 全工具集（shell / 文件 / 检索 / 技能 / 计划 / 目标 / 子代理 / 工作流）+ 中文专家人设 + 全局可见的 7 个技能与 4 个内置子代理 subagent_mc_plan/skeleton/content/verify（v0.6.0 起装完插件重启 dsh 后**自动安装**到 `$DSH_HOME/.agent-presets/minecraft/`，见下方「Minecraft 专家 agent 的安装」） |
+| `minecraft`（Minecraft 专家） | 一键切换的专精 agent：standard 全工具集（shell / 文件 / 检索 / 技能 / 计划 / 目标 / 子代理 / 工作流）+ 中文专家人设 + 全局可见的 8 个技能与 4 个内置子代理 subagent_mc_plan/skeleton/content/verify（v0.6.0 起装完插件重启 dsh 后**自动安装**到 `$DSH_HOME/.agent-presets/minecraft/`，见下方「Minecraft 专家 agent 的安装」） |
+| `minecraft-architect`（**Minecraft 架构师（Astra神的瞥视）**，v0.8.0） | 专家预设**逐字节复制**后只多两处：一段人设 + 一行 `minecraft-dev/codex` 模块（注册 `mc_codex` 工具与 `minecraft-codex-architect` 技能）。因此专家预设的工具/技能目录完全不变，只有本预设能看到 `mc_codex` |
+
+#### Minecraft 架构师：Codex 做架构，DSH 填内容（v0.8.0）
+
+分工照搬 Cherry Studio 里的 Architect / Coder 两个智能体（`// [TODO: Agent B] 描述` 标记就是交接协议）：
+
+1. DSH 先按 `minecraft-intake` 把版本/平台/加载器核对清楚，整理成一段 `goal`；
+2. 点名后调用 `mc_codex`：它把架构 brief 写到 `<项目>/.dsh/codex-architect.md`（**可读可改**），然后在项目目录里跑
+   `"…codex.exe" exec - -C "<项目>" -s workspace-write --skip-git-repo-check -o "<项目>/.dsh/codex-last-message.md" < "<项目>/.dsh/codex-architect.md"`
+   —— 这条命令原样回显在会话里，你也可以自己复制去跑；
+3. Codex 只写骨架：接口/签名/build 脚本/资源模板/主类注册，所有业务逻辑方法体留 `// [TODO: Agent B] 描述`，并额外产出 `FILL-SPEC.md`（标记位置 × 方法契约 × 构建命令 × UNVERIFIED 清单 × 完成判据）；
+4. DSH 只替换这些标记（不动签名/结构/接口），最后用 `mc_gradle` 跑到 build exitCode 0，并确认标记计数为 0。
+
+**透明度**（本预设的硬要求）：执行前先声明这一步会消耗**你自己的 Codex**（订阅账号计入 Codex 用量窗口；API key 计入余额），而且 DSH 侧不会显示这笔消耗；返回完整合并输出、退出码、用时、改动文件清单；**不使用 `--ephemeral`**，所以可以用 `codex resume <会话id>` 在 Codex 里打开同一次会话接管/复查；失败不静默重试，委派次数上限为「架构 1 次 + 修复 ≤1 次」。
+
+**前提**：只需要本机装着 Codex（桌面版会顺带提供 CLI；`mc_codex` 会自己探测 PATH、`~/.codex/plugins/.plugin-appserver/`、`%LOCALAPPDATA%\OpenAI\Codex\bin\<hash>\` 三处）。**不用打开 Codex 桌面版**——每次都 spawn 一个非交互会话。Codex 探不到/跑失败时，本预设会退回普通做法（自己写或走 A–D 链），并且**绝不留下 `[TODO: Agent B]` 标记**。
 
 ## 安装
 
@@ -102,10 +119,11 @@ dsh plugin --profile web remove minecraft-dev
 
 ### 安装 Minecraft 专家 agent（v0.6.0 起自动）
 
-**装完插件重启 dsh 后自动安装，无需手动复制**：插件每次启动（挂载）时把自带的 `preset/minecraft/` 复制到 preset 扫描根：
+**装完插件重启 dsh 后自动安装，无需手动复制**：插件每次启动（挂载）时把自带的 `preset/minecraft/` 与 `preset/minecraft-architect/`（v0.8.0 起）分别复制到 preset 扫描根：
 
-- 目标：`$DSH_HOME/.agent-presets/minecraft/`（默认 `C:\Users\<用户>\.dsh\.agent-presets\minecraft\`；设了 `DSH_HOME` 时以 `$DSH_HOME` 为准）。
-- 幂等：目标已有 `agent.cordis.yml` 就跳过，**绝不覆盖本地修改**；目录存在但缺 composition 文件时视为损坏并自动修复。
+- 目标：`$DSH_HOME/.agent-presets/minecraft/` 与 `$DSH_HOME/.agent-presets/minecraft-architect/`（默认 `C:\Users\<用户>\.dsh\.agent-presets\`；设了 `DSH_HOME` 时以 `$DSH_HOME` 为准）。
+- 幂等：目标已有 `agent.cordis.yml` 就跳过，**绝不覆盖本地修改**；目录存在但缺 composition 文件时视为损坏并自动修复。两个预设各自独立跳过，互不影响。
+- **升级到 v0.8.0 想看新的架构师预设**：删掉 `$DSH_HOME/.agent-presets/minecraft-architect/` → 重启 dsh → 自动重装（专家预设目录不用动，它本来就不变）。
 - 关闭：在 `$DSH_HOME/cordis.patch.yml`（或 profile 的 `cordis.patch.yml`）追加：
 
 ```yaml
@@ -215,3 +233,8 @@ npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BR
 - preset 自动安装（v0.6.0）发生在 dsh 启动（插件挂载）时——装完插件**必须重启 dsh** 才触发（这同时也是插件生效所需的重启）；只写入、永不覆盖已有 preset（`agent.cordis.yml` 存在即跳过）；关闭开关 `autoInstallPreset: false`；preset 内容更新不会自动传播——需删掉 `$DSH_HOME/.agent-presets/minecraft/` 让下次启动重新安装。
 - **preset 人设更新（v0.7：铁律 7 信息核对）需重装 preset**：删 `$DSH_HOME/.agent-presets/minecraft/` → 重启 dsh → 自动重装（人设含"信息不足先批量提问"行为规则；不重装则只有技能层生效，行为规则缺失）。**重装会覆盖手改——更新前先备份该目录**。
 - 子代理继承宿主进程环境（`JAVA_HOME` 等）：老线（1.7.10/1.12.2/1.16.5）构建失败多为 JDK 8 环境问题而非代码问题，D 环会优先报环境。
+- **v0.8.0 架构师预设必须在重启 dsh 后才可用（实测）**：预设行 `minecraft-dev/codex` 是从 profile 目录解析的，而运行中的 dsh 进程已缓存了旧版 `package.json`（无 `./codex` 导出）与旧 `lib/present.js`，于是会报 `Package subpath './codex' is not defined by "exports"` 或 `does not provide an export named 'codexCallView'`。**重装插件后重启 dsh 即可**（新进程读的是磁盘上的新清单）；重启前的挂载失败不代表文件有问题。
+- `preset.yml` 用严格 YAML 解析（js-yaml）：`name`/`description` 里出现 `[`、`]`、`: ` 等必须**加引号**，否则整个元数据块被丢弃，预设会显示成无名且没有 roster 顺序（v0.8.0 开发中踩过：未加引号的 `[TODO: Agent B]`）。
+- `mc_codex` 的 `filesChanged` 是按 mtime 扫描项目目录得出的（已跳过 `.dsh/.git/node_modules/build/...`），因此可能包含子进程自己产生的临时文件（例如 PowerShell 的 `ModuleAnalysisCache`）——这是如实报告，不是项目文件清单。
+- `mc_codex` 用的是**你自己账号的 Codex**，DSH 不会显示这笔消耗（订阅计入用量窗口 / API key 计入余额）；技能因此把委派上限写死为「架构 1 次 + 修复 ≤1 次」，且失败不自动重试。
+- `mc_codex` 走 `cmd.exe /d /s /c` + stdin 重定向（POSIX 走 `/bin/sh -c`）：卡片显示的命令**就是**实际执行的命令；Codex 自身报错（鉴权/额度/网络）会原样回显，不做归类改写。

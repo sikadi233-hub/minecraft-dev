@@ -78,6 +78,34 @@ test('heals a broken preset directory whose composition file is missing', async 
   }
 })
 
+test('installs two presets side by side under distinct ids, independently skipped', async () => {
+  const expertSrc = await makeSource()
+  const architectSrc = await mkdtemp(join(tmpdir(), 'mc-preset-src-'))
+  await writeFile(join(architectSrc, 'preset.yml'), 'displayName: Minecraft Architect\n')
+  await writeFile(join(architectSrc, 'agent.cordis.yml'), '- name: architect-base\n')
+  const home = await mkdtemp(join(tmpdir(), 'mc-preset-home-'))
+  try {
+    const expert = await ensurePresetInstalled({ srcDir: expertSrc, presetId: 'minecraft', home })
+    const architect = await ensurePresetInstalled({ srcDir: architectSrc, presetId: 'minecraft-architect', home })
+    assert.equal(expert.installed, true)
+    assert.equal(architect.installed, true)
+    assert.equal(expert.destDir, join(home, USER_PRESET_DIR, 'minecraft'))
+    assert.equal(architect.destDir, join(home, USER_PRESET_DIR, 'minecraft-architect'))
+    assert.equal(await readFile(join(architect.destDir, COMPOSITION_FILE), 'utf8'), '- name: architect-base\n')
+
+    // Re-running either preset skips only that one, leaving both intact.
+    const again = await ensurePresetInstalled({ srcDir: expertSrc, presetId: 'minecraft', home })
+    assert.equal(again.installed, false)
+    assert.equal(again.reason, 'exists')
+    assert.equal(await readFile(join(expert.destDir, COMPOSITION_FILE), 'utf8'), '- name: dsh-base\n')
+    assert.equal(await readFile(join(architect.destDir, COMPOSITION_FILE), 'utf8'), '- name: architect-base\n')
+  } finally {
+    await rm(expertSrc, { recursive: true, force: true })
+    await rm(architectSrc, { recursive: true, force: true })
+    await rm(home, { recursive: true, force: true })
+  }
+})
+
 test('resolveDshHome honors DSH_HOME, tilde expansion and the ~/.dsh fallback', () => {
   assert.equal(resolveDshHome({ DSH_HOME: 'C:\\Custom\\Home' }), 'C:\\Custom\\Home')
   assert.equal(resolveDshHome({ DSH_HOME: '~/mc-home' }), join(homedir(), 'mc-home'))
