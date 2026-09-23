@@ -62,7 +62,7 @@ plugins {
 |---|---|
 | Paper/Paper 家族 | `https://repo.papermc.io/repository/maven-public/` |
 | Fabric | `https://maven.fabricmc.net/` |
-| NeoForge | `https://maven.neoforged.net/releases/` |
+| NeoForge | `https://maven.neoforged.net/releases/net/neoforged/neoforge/`（Gradle 的 `maven { url ... }` 写到它的父路径 `…/releases` 即可；裸路径直接访问会 404） |
 | Spigot 老线 API | `https://hub.spigotmc.org/nexus/content/repositories/snapshots/`（`org.spigotmc:spigot-api:1.7.10-R0.1-SNAPSHOT` 式坐标） |
 | 通用 | `https://maven.minecraftforge.net/`（老 Forge）、`mavenCentral()`、`gradlePluginPortal()` |
 | CurseForge 模组 jar | `https://cursemaven.com`（坐标 `curse.maven:<slug>-<projectId>:<fileId>`） |

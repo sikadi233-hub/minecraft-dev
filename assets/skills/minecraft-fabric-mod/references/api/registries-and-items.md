@@ -5,7 +5,7 @@
 > - Fabric Wiki「Intro to Registries」：https://wiki.fabricmc.net/tutorial:registry
 > - ResourceLocation/Identifier 改名与工厂方法：NeoForge 官方迁移文档 https://docs.neoforged.net/primer/docs/1.21/ 与 FabricMC/fabric-api GitHub 讨论 #5216；mojmap 1.21.11 起 `ResourceLocation` → `Identifier`
 >
-> **26.3 复核（2026-09）**：官方文档站目前**没有** 26.2 / 26.3 的版本页（`https://docs.fabricmc.net/26.2/`、`/26.3/` 均 404），最新 26.x 版本页仍是 `/26.1.2/`。因此本文件对 **26.3 的注册 API 未复核**，只保证 1.20.1 / 1.21.11 / 26.2 三线；26.3 工程里注册报错时，以反编译的 26.3 客户端类为准（`javap` / IDE）。
+> **26.3 复核（2026-09）**：官方文档站目前**没有** 26.2 / 26.3 的版本页——`docs.fabricmc.net` 下任何带 `/26.2/` 或 `/26.3/` 前缀的路径都返回 404，最新 26.x 版本页仍是上方链接里的 `/26.1.2/`。因此本文件对 **26.3 的注册 API 未复核**，只保证 1.20.1 / 1.21.11 / 26.2 三线；26.3 工程里注册报错时，以反编译的 26.3 客户端类为准（`javap` / IDE）。
 >
 > 以下全部为 mojmap 名（本项目用 `loom.officialMojangMappings()`）。
 
