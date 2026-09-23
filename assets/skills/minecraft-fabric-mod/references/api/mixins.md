@@ -1,6 +1,6 @@
 # Fabric Mixin API 参考
 
-> 核对日期：2026-08。签名核对来源：
+> 核对日期：2026-09（26.3 线 Java 级别仍为 25，故 `compatibilityLevel` 仍是 `JAVA_25`；mixin 相关的具体签名**未**针对 26.3 逐条复核）。签名核对来源：
 > - Mixin 配置格式与 fabric.mod.json `mixins` 字段：Fabric Wiki「fabric.mod.json Specification」https://wiki.fabricmc.net/documentation:fabric_mod_json_spec 与「Mixin Configurations」https://wiki.fabricmc.net/tutorial:mixin_configs
 > - refmap 取消：fabric-loom 发布说明 https://github.com/FabricMC/fabric-loom/releases （Loom 1.16 起默认禁用旧版 Mixin 注解处理器，mixin 改为 Tiny Remapper 就地重映射，不再生成 refmap）与 Fabric Wiki「Mixins and Obfuscation」https://wiki.fabricmc.net/drafts:mixin_obfuscation
 > - 注解签名：SpongePowered Mixin javadoc（org.spongepowered.asm.mixin 包）
@@ -36,7 +36,7 @@
 字段说明：
 - `package`：mixin 类所在包（惯例建 `.mixin` 子包）；下面数组里的名字是该包下类名的**简写**。
 - `mixins` / `client` / `server`：数组。`client` 里放仅客户端类（类引用 `Screen`、`GuiGraphics` 等），loader 在服务端不会加载它们。
-- `compatibilityLevel`：建议填工程 Java 级别（1.20.1 线 `JAVA_17`；1.21.11 线 `JAVA_21`；26.2 线 `JAVA_25`）。
+- `compatibilityLevel`：建议填工程 Java 级别（1.20.1 线 `JAVA_17`；1.21.11 线 `JAVA_21`；26.2 / 26.3 线 `JAVA_25`）。
 - `injectors.defaultRequire`：默认 1——即每个注入点必须命中一次，命中不了直接崩溃（防映射错位导致注入静默失效）。
 - **`refmap` 字段：新工程不要写。** Loom 1.16 起默认禁用旧版 Mixin 注解处理器，mixin 由 Tiny Remapper 就地重映射，不再生成 refmap.json；老教程里的 `"refmap": "{{name}}-refmap.refmap.json"` 已过时。旧工程从旧 loom 升级时把该字段删掉。
 

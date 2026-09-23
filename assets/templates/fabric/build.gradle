@@ -23,12 +23,11 @@ processResources {
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.release = {{javaVersion}}
-}
-
+// 目标 Java 版本用 toolchain 声明：环境 JDK 低于目标（例如环境是 17、目标是 21）时，
+// 只有 toolchain 会让 foojay 自动 provision 对应 JDK，否则 javac 报「不支持发行版本」。
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.toVersion({{javaVersion}})
-    targetCompatibility = JavaVersion.toVersion({{javaVersion}})
+    toolchain {
+        languageVersion = JavaLanguageVersion.of({{javaVersion}})
+    }
 }

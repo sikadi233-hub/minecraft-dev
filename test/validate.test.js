@@ -49,7 +49,9 @@ test('normalizeMcLine strips patch and x suffix', () => {
 test('toApiVersion derives plugin.yml api-version', () => {
   assert.equal(toApiVersion('1.21.8'), '1.21')
   assert.equal(toApiVersion('26.2'), '26.2')
-  assert.equal(toApiVersion('26'), '26.2')
+  assert.equal(toApiVersion('26.3'), '26.3')
+  // A bare major falls back to the current line (v0.9: 26.3).
+  assert.equal(toApiVersion('26'), '26.3')
   assert.equal(toApiVersion('1.20.x'), '1.20')
 })
 
@@ -84,6 +86,10 @@ test('resolveLine hits every platform x line with the expected Java level', () =
     ['neoforge', '1.20.1', 17],
     ['neoforge', '1.21.11', 21],
     ['neoforge', '26.2', 25],
+    // v0.9: MC 26.3 (2026-09-15) — Java stays 25.
+    ['paper', '26.3', 25],
+    ['fabric', '26.3', 25],
+    ['neoforge', '26.3', 25],
   ]
   for (const [platform, version, java] of expectations) {
     assert.equal(defaultJavaVersion(platform, version), java, `${platform} ${version}`)
@@ -110,8 +116,22 @@ test('resolveLine rejects unknown lines and platforms with the supported lists',
   // (1.21.1 became 1.21.11, whose template has no modLoader and fails to load).
   assert.throws(
     () => resolveLine('neoforge', '1.21.3'),
-    /no template pinned to neoforge 1\.21\.3; supported Minecraft versions: 1\.20\.1, 1\.21\.11, 1\.21\.1, 26\.2/,
+    /no template pinned to neoforge 1\.21\.3; supported Minecraft versions: 1\.20\.1, 1\.21\.11, 1\.21\.1, 26\.2, 26\.3/,
   )
+  // v0.9: a TWO-part version that only prefix-matched a line is rejected too —
+  // `fabric 26.4` used to fall through to the `26` entry and silently build a
+  // 26.2 project.
+  assert.throws(
+    () => resolveLine('fabric', '26.4'),
+    /no template for fabric 26\.4; supported Minecraft versions: 1\.20\.1, 1\.21\.11, 26\.2, 26\.3/,
+  )
+  assert.throws(
+    () => resolveLine('neoforge', '26.4'),
+    /no template for neoforge 26\.4; supported Minecraft versions: 1\.20\.1, 1\.21\.11, 1\.21\.1, 26\.2, 26\.3/,
+  )
+  // Paper stays lenient: a specific-but-unpinned 26.x version is a real server
+  // version the dynamic paper-api range can serve.
+  assert.equal(resolveLine('paper', '26.4').defaultMcVersion, '26.2')
   // Pinned versions resolve exactly, and both 1.21.1 and 1.21.11 coexist.
   assert.equal(resolveLine('neoforge', '1.21.1').defaultMcVersion, '1.21.1')
   assert.equal(resolveLine('neoforge', '1.21.1').templateDir, 'neoforge-1.21.1')
@@ -146,13 +166,26 @@ test('lineCoords returns the per-line pinned coordinates', () => {
   assert.equal(lineCoords('neoforge', '1.21.11').neoVersion, '21.11.45')
   assert.equal(lineCoords('neoforge', '26.2').neoVersion, '26.2.0.59')
   assert.equal(lineCoords('neoforge', '26.2').gradleVersion, '9.2.1')
+  // v0.9: 26.3 coordinates, read from the loaders' own metadata on 2026-09.
+  // loom stays on 1.17.x: 1.18.2 demands a Java 25 Gradle JVM (verified by a
+  // real build), which would break every user launching Gradle on an older JDK.
+  assert.deepEqual(lineCoords('fabric', '26.3'), {
+    gradleVersion: '9.5.1',
+    loomVersion: '1.17.21',
+    loaderVersion: '0.19.5',
+    fabricApiVersion: '0.161.0+26.3',
+  })
+  assert.equal(lineCoords('neoforge', '26.3').moddevVersion, '2.0.147')
+  assert.equal(lineCoords('neoforge', '26.3').neoVersion, '26.3.0.12-beta')
   // Paper has no coords: falls back to {}.
   assert.deepEqual(lineCoords('paper', '1.21.8'), {})
+  assert.deepEqual(lineCoords('paper', '26.3'), {})
 })
 
 test('paperApiVersion regression stays unchanged', () => {
   assert.equal(paperApiVersion('1.21.8'), '1.21.8-R0.1-SNAPSHOT')
   assert.equal(paperApiVersion('26.2'), '26.2.build.+')
+  assert.equal(paperApiVersion('26.3'), '26.3.build.+')
 })
 
 test('PLATFORM_LABELS covers all five supported platforms', () => {

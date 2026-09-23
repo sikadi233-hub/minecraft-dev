@@ -1,9 +1,11 @@
 # Fabric 注册与物品 API 参考
 
-> 核对日期：2026-08。签名核对来源：
+> 核对日期：2026-09。签名核对来源：
 > - 官方文档「Creating Your First Item / First Block」：https://docs.fabricmc.net/develop/items/first-item （1.21.11 版：https://docs.fabricmc.net/1.21.11/develop/items/first-item ，26.x 版：https://docs.fabricmc.net/26.1.2/develop/items/first-item ）
 > - Fabric Wiki「Intro to Registries」：https://wiki.fabricmc.net/tutorial:registry
 > - ResourceLocation/Identifier 改名与工厂方法：NeoForge 官方迁移文档 https://docs.neoforged.net/primer/docs/1.21/ 与 FabricMC/fabric-api GitHub 讨论 #5216；mojmap 1.21.11 起 `ResourceLocation` → `Identifier`
+>
+> **26.3 复核（2026-09）**：官方文档站目前**没有** 26.2 / 26.3 的版本页（`https://docs.fabricmc.net/26.2/`、`/26.3/` 均 404），最新 26.x 版本页仍是 `/26.1.2/`。因此本文件对 **26.3 的注册 API 未复核**，只保证 1.20.1 / 1.21.11 / 26.2 三线；26.3 工程里注册报错时，以反编译的 26.3 客户端类为准（`javap` / IDE）。
 >
 > 以下全部为 mojmap 名（本项目用 `loom.officialMojangMappings()`）。
 
@@ -33,7 +35,7 @@ Registry.register(BuiltInRegistries.ITEM,
 - `new Item.Properties()` 是 mojmap 名；Yarn 名为 `Item.Settings`——社区教程里的 `Item.Settings` 在 mojmap 工程里要写成 `Item.Properties`。
 - 静态字段初始化的坑：把物品存成 `public static final Item X = Registry.register(...)` 时，类要在 `onInitialize()` 里显式触发一次（如 `ModItems.initialize();` 空方法），否则静态块不会执行、物品不会注册（官方文档明确此坑）。
 
-### 2.2 1.21.2+ 线（1.21.11 / 26.2 均如此，官方文档示例）
+### 2.2 1.21.2+ 线（1.21.11 / 26.2 均如此，官方文档示例；26.3 未复核）
 
 1.21.2 起 `ResourceLocation`/`Identifier` 构造器私有化，且 1.21.2 起物品的 key **必须**写进 `Item.Properties`（漏写报 `NullPointerException: Item id not set`），注册改用 `ResourceKey` 重载：
 
@@ -95,10 +97,10 @@ ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.INGREDIENTS).register(group 
 ```
 
 - `CreativeModeTabs`（mojmap `net.minecraft.world.item.CreativeModeTabs`）常用：`INGREDIENTS`、`BUILDING_BLOCKS`、`COMBAT`、`SEARCH`。
-- 1.20.1 与 1.21.11/26.2 签名一致；`group.accept(...)` 参数在较新版本是 `ItemLike`/`ItemStack`（传物品即可）。
+- 1.20.1 与 1.21.11/26.2 签名一致（**26.3 未复核**）；`group.accept(...)` 参数在较新版本是 `ItemLike`/`ItemStack`（传物品即可）。
 
 ## 6. 备注
 
 - 原版常量类 `Items` / `Blocks` 的字段名即注册名（如 `Items.DIAMOND`），`Blocks.IRON_BLOCK`。
 - 1.20.1 物品的 `Item.Properties` 没有 `setId`；`setId` 与 `RegistryKey` 注册重载是 1.21.2+ 的事，老版本写了会编译不过。
-- 26.x 若再遇注册 API 变化（官方文档 26.1.2 示例即第 2.2 节形式），以 https://docs.fabricmc.net/26.1.2/ 对应页面为准。
+- 26.x 若再遇注册 API 变化（官方文档 26.1.2 示例即第 2.2 节形式），以 https://docs.fabricmc.net/26.1.2/ 对应页面为准。**26.3 无官方版本页可查**（见文首 26.3 复核说明）——26.3 上先按 26.2 形式写，编译/运行报错处按 26.3 客户端反编译结果修正。

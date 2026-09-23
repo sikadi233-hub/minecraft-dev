@@ -1,16 +1,17 @@
 # 模组 API 参考（Minecraft 现代线：1.20.1 Forge / 1.21.1 NeoForge / 26.x NeoForge）
 
-- 核对日期：2026-08-16。projectId 当日在线核实：api.cfwidget.com 镜像（CF 直连 403）`GET /minecraft/mc-mods/<id>` 返回 JSON `id` 逐项实测（10 项全部通过）；maven 坐标逐个 curl 实测 metadata/目录；API 类/扩展点从 GitHub 分支源码（git trees + raw 文件）实测，发现与旧线不同的以源码为准。
+- 核对日期：2026-08-16（下列 26.x 条目）；**2026-09 追加 26.3 复核**：本文件的「26.x」坐标默认指 **26.2 线**（artifact 里带 `+26.2` / `-26.2-` 的那些）——26.3 线只有 **JEI 与 Curios** 已实测有 artifact（见各条目），其余条目 26.3 状态**未复核**，写代码前查对应 maven metadata。projectId 当日在线核实：api.cfwidget.com 镜像（CF 直连 403）`GET /minecraft/mc-mods/<id>` 返回 JSON `id` 逐项实测（10 项全部通过）；maven 坐标逐个 curl 实测 metadata/目录；API 类/扩展点从 GitHub 分支源码（git trees + raw 文件）实测，发现与旧线不同的以源码为准。
 - **铁律：开发附属前先查本文件，禁止凭记忆写坐标/类名。** fileId 等易变值一律以 CurseForge 文件页为准（R16）。
 - curse.maven 通用写法：build.gradle 加 `repositories { maven { url 'https://cursemaven.com' } }`，依赖写 `compileOnly "curse.maven:<slug>-<projectId>:<fileId>"`（ModDevGradle / ForgeGradle 下视需要 `fg.deobf(...)` 或原样）。**fileId 获取：到 CurseForge 项目 Files 页（https://www.curseforge.com/minecraft/mc-mods/<slug>/files）点目标版本，右侧「Curse Maven 代码」复制数字**；CurseForge 迁移文件时 fileId 会变，本文一律不锁定，以 Files 页为准。
 - 本时代共性（现代线三时代，与老线 mods-1.7.10.md / mods-1.12.2.md 不通用）：
   - 三时代：1.20.1 = Forge 主线；1.21.1 = NeoForge；26.x = NeoForge（Fabric 线不在本文件覆盖，走 minecraft-fabric-mod 技能）。每个条目分别给出三时代版本号，无对应时代版本时注明「未见」。
+  - **26.x 内部再分 26.2 / 26.3 两条线**（26.3 于 2026-09-15 发布）：NeoForge 侧 26.3 目前只有 `-beta` 构建（最新 26.3.0.12-beta，maven.neoforged.net 实测），所以多数模组的 26.3 artifact 要么没出、要么只是 beta——逐条目注明，标「未复核」的别当已确认。
   - 软依赖检测现代写法：`ModList.get().isLoaded("<modid>")` + mods.toml / neoforge.mods.toml 的 `optional` modDependencies；**`@Optional`（net.minecraftforge.fml.common.Optional）已废弃，仅老线使用**。
   - 构建侧：1.20.1 仍可用 ForgeGradle `fg.deobf(...)`；1.21.1+ / 26.x 走 ModDevGradle（见 minecraft-forge-mod / minecraft-neoforge-mod 技能）。
 
 ## Create（机械动力，simibubi / Creators-of-Create）
 - CurseForge：https://www.curseforge.com/minecraft/mc-mods/create（projectId 328085，核实 2026-08-16；来源 https://api.cfwidget.com/minecraft/mc-mods/328085 返回 `"id":328085`）
-- 简介：动能科技模组（传动、活动结构、流体、列车）。三时代：1.20.1 线 6.0.x（Forge 与 NeoForge 双 loader 支持）；1.21.1 线 6.0.x（NeoForge）；**26.x 未见**（maven.createmod.net 无 create-1.21.8/26.x 目录，GitHub 亦无 1.21.8+ 分支，2026-08-16 实测）。modid：`create`。
+- 简介：动能科技模组（传动、活动结构、流体、列车）。三时代：1.20.1 线 6.0.x（Forge 与 NeoForge 双 loader 支持）；1.21.1 线 6.0.x（NeoForge）；**26.x 未见**（maven.createmod.net 无 create-1.21.8/26.x 目录，GitHub 亦无 1.21.8+ 分支；2026-09 复核 create-1.21.1 仍是最高线、latest 6.0.11-312，26.2 / 26.3 均未见）。modid：`create`。
 - 官方 maven：有 — https://maven.createmod.net （0.5.1 老线仓库 maven.tterrag.com 已下线——2026-08-16 复核根目录 200 但 /releases 仓库与 create 目录均已移除，勿引用；老档走 curse.maven/Modrinth）。坐标（目录+metadata 实测）：
   - 1.20.1：`compileOnly("com.simibubi.create:create-1.20.1:6.0.8-291") { transitive = false }`（1.21.1 线同式 `create-1.21.1:6.0.11-295`）
   - **无裸 jar**：只有 `-all` / `-slim` / `-sources` / `-javadoc` classifier，compileOnly 用 `:all` + `transitive = false`
@@ -38,9 +39,9 @@ public class MyCompactingRecipes extends CompactingRecipeGen {
     }
 }
 ```
-- 状态/注意：开源（MIT，LICENSE 实测）；1.20.1 线 6.0.x 同时支持 Forge/NeoForge；`-all` jar 只用于编译期，禁止打包进产物；26.x 线未见、勿猜测坐标
+- 状态/注意：开源（MIT，LICENSE 实测）；1.20.1 线 6.0.x 同时支持 Forge/NeoForge；`-all` jar 只用于编译期，禁止打包进产物；26.2 / 26.3 线均未见、勿猜测坐标
 - 官方/参考链接：源码 https://github.com/Creators-of-Create/Create （分支 `mc1.20.1/dev` / `mc1.21.1/dev`，API 在 src/main/java/com/simibubi/create/api）、Wiki https://create.fandom.com/wiki/Create
-- 核实来源：cfwidget API（id 328085）；maven.createmod.net metadata（6.0.8-291 / 6.0.11-295）+ 无 26.x 目录；GitHub 分支树（MovementBehaviour.REGISTRY、MovingInteractionBehaviour、CompactingRecipeGen extends ProcessingRecipeGen、无 1.21.8+/26.x 分支）
+- 核实来源：cfwidget API（id 328085）；maven.createmod.net metadata（6.0.8-291 / 6.0.11-295）+ 无 26.x 目录（2026-09 复核 create-1.21.1 latest = 6.0.11-312，仍无 26.x）；GitHub 分支树（MovementBehaviour.REGISTRY、MovingInteractionBehaviour、CompactingRecipeGen extends ProcessingRecipeGen、无 1.21.8+/26.x 分支）
 
 ## Botania（植物魔法，Vazkii）
 - CurseForge：https://www.curseforge.com/minecraft/mc-mods/botania（projectId 225643，核实 2026-08-16；来源 https://api.cfwidget.com/minecraft/mc-mods/225643 返回 `"id":225643`）
@@ -78,9 +79,9 @@ BotaniaAPI.instance().registerPaintableBlock(MyBlocks.MY_POTTED_PLANT,
 - CurseForge：https://www.curseforge.com/minecraft/mc-mods/applied-energistics-2（projectId 223794，核实 2026-08-16；来源 https://api.cfwidget.com/minecraft/mc-mods/223794 返回 `"id":223794`）
 - 简介：ME 存储网络物流模组。三时代：1.20.1 = 15.3.x（Forge/NeoForge/Fabric）；1.21.1 = 16.x；1.21.5+/26.x = 19.x/26.x（Maven Central）。modid 现代线为 **`ae2`**（不是老线 `appliedenergistics2`）。
 - 官方 maven：**Maven Central** `org.appliedenergistics:appliedenergistics2`（README 声明 + repo1.maven.org metadata 实测）——**15.x/16.x 不在 Central**（metadata 全量实测无 15/16），1.20.1 / 1.21.1 走 curse.maven 或 Modrinth maven
-  - 1.21.5+/26.x 线：`compileOnly "org.appliedenergistics:appliedenergistics2:19.2.17:api"`（`-api` classifier 实测存在，19.2.17-api.jar 下载 200；26.x 线 latest = 26.1.10-beta）
+  - 1.21.5+/26.x 线：`compileOnly "org.appliedenergistics:appliedenergistics2:19.2.17:api"`（`-api` classifier 实测存在，19.2.17-api.jar 下载 200；26.x 早期线 latest = **26.1.12-beta**，2026-09 复核——Central 上只有 26.1.x-alpha/beta，**无 26.2 / 26.3 坐标**）
 - curse.maven 兜底：`compileOnly "curse.maven:applied-energistics-2-223794:<fileId>"`（fileId 从 https://www.curseforge.com/minecraft/mc-mods/applied-energistics-2/files 复制）
-- 本时代常用版本：1.20.1 = 15.3.6（Modrinth 实测）；1.21.1 = 16.x（同上）；26.x = 26.1.10-beta（Central release）
+- 本时代常用版本：1.20.1 = 15.3.6（Modrinth 实测）；1.21.1 = 16.x（同上）；26.x = **26.1.12-beta**（Central；2026-09 复核，26.2 / 26.3 均未见）
 - API 入口（包 `appeng.api`；forge/1.20.1 与 main 两分支树实测）——**rv6 老线机制在现代线已移除**：`@AEPlugin`、`AEApi.instance()`、`MENetworkEvent`/`@MENetworkEventSubscribe`、`IGridCache` 在两分支树均无对应文件，勿引用。现代入口：
   - `networking.GridServices`：`public static synchronized <T extends IGridServiceProvider> void register(Class<? super T> publicInterface, Class<T> implClass)`（两分支同签名实测；AE 按构造器自动构造实例，网格经 `IGrid.getService(Class)` 查询）；`networking.GridHelper`
   - `networking.crafting`：`ICraftingProvider` / `ICraftingService`；`storage.cells.ICellHandler`；`stacks`（AEKey/IAEStack 体系）；`features`：`P2PTunnelAttunement`、`GridLinkables`、`Locatables`、`IPlayerRegistry`
@@ -107,7 +108,7 @@ public static void init() {
 
 ## Mekanism（通用机械，aidancbrady / Mekanism 团队）
 - CurseForge：https://www.curseforge.com/minecraft/mc-mods/mekanism（projectId 268560，核实 2026-08-16；来源 https://api.cfwidget.com/minecraft/mc-mods/268560 返回 `"id":268560`）
-- 简介：高科自动化模组（能量/化学气体/管道/多方块/模块化装备）。三时代：1.20.1 = 10.4.x；1.21.1 = 10.7.x；**26.x 未见**（modmaven.dev metadata 最高 1.21.1-10.7.19.85）。modid：`mekanism`。
+- 简介：高科自动化模组（能量/化学气体/管道/多方块/模块化装备）。三时代：1.20.1 = 10.4.x；1.21.1 = 10.7.x；**26.x 未见**（modmaven.dev metadata 最高 1.21.1-10.7.19.85；2026-09 复核仍为最高，26.2 / 26.3 均未见）。modid：`mekanism`。
 - 官方 maven：有 — https://modmaven.dev ；`compileOnly "mekanism:Mekanism:1.20.1-10.4.16.80"`（1.21.1 线 `1.21.1-10.7.19.85`）；现代版单 artifact 多 classifier（实测）：`-api` / `-all` / `-generators` / `-tools` / `-additions` / `-sources`（Generators 等模块并入 classifier，不再独立坐标）
 - curse.maven 兜底：`compileOnly "curse.maven:mekanism-268560:<fileId>"`（fileId 从 https://www.curseforge.com/minecraft/mc-mods/mekanism/files 复制）
 - 本时代常用版本：1.20.1-10.4.16.80；1.21.1-10.7.19.85
@@ -196,19 +197,20 @@ public static void init() {
   "sound": "minecraft:item.axe.scrape"
 }
 ```
-- 状态/注意：开源 MIT；无 API 包——需要代码级集成（如锅的自定义交互）走 Forge/NeoForge 事件与注册表引用，勿引内部类；`1.21.1` 线只有 NeoForge 版；26.x 无发布（GitHub 26.1 分支开发中，勿当已发版引用）
+- 状态/注意：开源 MIT；无 API 包——需要代码级集成（如锅的自定义交互）走 Forge/NeoForge 事件与注册表引用，勿引内部类；`1.21.1` 线只有 NeoForge 版；26.x 无发布（GitHub 26.1 分支开发中，勿当已发版引用；**26.3 未复核**）
 - 官方/参考链接：源码 https://github.com/vectorwing/FarmersDelight （分支 `1.20` / `1.21` / `26.1`）、Wiki https://github.com/vectorwing/FarmersDelight/wiki
 - 核实来源：cfwidget API（id 398521）；Modrinth 版本 API（1.20.1-1.3.2 / 1.21.1-1.3.2、无 26.x）；GitHub build.gradle（publishing file:// 本地目录）+ 1.20 分支树（common/crafting/CuttingBoardRecipe.java、CookingPotRecipe.java、无 api 包）
 
 ## Curios（饰品 API，TheIllusiveC4）
 - CurseForge：https://www.curseforge.com/minecraft/mc-mods/curios（projectId 309927，核实 2026-08-16；来源 https://api.cfwidget.com/minecraft/mc-mods/309927 返回 `"id":309927`、title "Curios API"）
-- 简介：饰品栏 API（戒指/项链/腰带等槽位）。三时代全支持：1.20.1 = Forge；1.21.1 = NeoForge；26.x = NeoForge（三个 release 均 metadata 实测）。modid：`curios`。
+- 简介：饰品栏 API（戒指/项链/腰带等槽位）。三时代全支持：1.20.1 = Forge；1.21.1 = NeoForge；26.2 = NeoForge（16.0.0+26.2）；**26.3 = NeoForge 但只有 beta**（17.0.0-beta+26.3，maven metadata 实测，2026-09）。modid：`curios`。
 - 官方 maven：有 — https://maven.theillusivec4.top ；group `top.theillusivec4.curios`，artifact 按 loader 分（目录实测）：
   - 1.20.1：`compileOnly "top.theillusivec4.curios:curios-forge:5.14.1+1.20.1"`
   - 1.21.1：`compileOnly "top.theillusivec4.curios:curios-neoforge:9.5.1+1.21.1"`
-  - 26.x：`compileOnly "top.theillusivec4.curios:curios-neoforge:16.0.0+26.2"`（版本形如 `<ver>+<mc>`）
+  - 26.2 线：`compileOnly "top.theillusivec4.curios:curios-neoforge:16.0.0+26.2"`（版本形如 `<ver>+<mc>`）
+  - 26.3 线：`compileOnly "top.theillusivec4.curios:curios-neoforge:17.0.0-beta+26.3"`（**只有 beta**，2026-09 metadata 实测；要稳就用 16.0.0+26.2）
 - curse.maven 兜底：`compileOnly "curse.maven:curios-309927:<fileId>"`（fileId 从 Files 页复制）
-- 本时代常用版本：5.14.1+1.20.1 / 9.5.1+1.21.1 / 16.0.0+26.2
+- 本时代常用版本：5.14.1+1.20.1 / 9.5.1+1.21.1 / 16.0.0+26.2 / 17.0.0-beta+26.3（beta）
 - API 入口（包 `top.theillusivec4.curios.api`，1.20.x / 1.21.x 分支树与 CuriosApi.java 源码实测）：
   - `CuriosApi`：`registerCurio(Item, ICurioItem)`（物品绑定行为，两分支同签名实测）、`registerCurioPredicate(ResourceLocation, Predicate<SlotResult>)`、`getItemStackSlots`、`getSlot`/`getSlots`、`getCuriosInventory(LivingEntity)`、`getCurio(ItemStack)`、`addSlotModifier`、`createCurioProvider`
   - `type.capability`：`ICurioItem` / `ICurio`（物品实现即入饰品栏）；`CuriosCapability`（capability 常量；1.21+ NeoForge 为 attachment）；`type.ISlotType`、`SlotTypePreset`（api 根包实测）、`SlotContext`/`SlotResult`
@@ -231,18 +233,20 @@ public static void init() {
 }
 // 自定义槽位 json：data/myaddon/curios/slots/my_ring.json（size/icon/validators）
 ```
-- 状态/注意：开源；1.21+ NeoForge 无 capability——attachment 化（CuriosCapability 用法随版本差异，以 9.x API 为准）；26.x 线由 neoforge artifact 覆盖
+- 状态/注意：开源；1.21+ NeoForge 无 capability——attachment 化（CuriosCapability 用法随版本差异，以 9.x API 为准）；26.x 线由 neoforge artifact 覆盖——26.2 用 `16.0.0+26.2`、**26.3 只有 `17.0.0-beta+26.3`**
 - 官方/参考链接：源码 https://github.com/TheIllusiveC4/Curios （分支 `1.20.x` / `1.21.x` / `26.x`）、Wiki https://github.com/TheIllusiveC4/Curios/wiki
-- 核实来源：cfwidget API（id 309927）；maven.theillusivec4.top 三 artifact metadata（5.14.1+1.20.1 / 9.5.1+1.21.1 / 16.0.0+26.2）；GitHub 1.20.x 树 + CuriosApi.java 方法 grep（registerCurio / registerCurioPredicate / type.capability.ICurioItem / event 清单）
+- 核实来源：cfwidget API（id 309927）；maven.theillusivec4.top 三 artifact metadata（5.14.1+1.20.1 / 9.5.1+1.21.1 / 16.0.0+26.2）；**2026-09 复核 `curios-neoforge` metadata：末位 16.0.0+26.2 → 17.0.0-beta+26.3**（26.3 无正式版）；GitHub 1.20.x 树 + CuriosApi.java 方法 grep（registerCurio / registerCurioPredicate / type.capability.ICurioItem / event 清单）
 
 ## JEI（Just Enough Items，配方查看器，mezz）
 - CurseForge：https://www.curseforge.com/minecraft/mc-mods/jei（projectId 238222，核实 2026-08-16；来源 https://api.cfwidget.com/minecraft/mc-mods/238222 返回 `"id":238222`）
-- 简介：物品与配方查看器。三时代：1.20.1 = 15.x；1.21.1 = 19.x；26.x = 30.x（blamejared 三线 metadata 实测）。modid：`jei`。作为依赖（runtimeOnly）装入即可，附属侧只编译 API。
+- 简介：物品与配方查看器。三时代：1.20.1 = 15.x；1.21.1 = 19.x；26.2 = 30.x；**26.3 = 31.x**（blamejared metadata 实测：`jei-26.3-neoforge-api` 已出到 31.6.0.25，2026-09）。modid：`jei`。作为依赖（runtimeOnly）装入即可，附属侧只编译 API。
 - 官方 maven：有 — https://maven.blamejared.com ；artifact 按 `jei-<mc>-<loader>` 分（目录实测）：
   - 1.20.1：`compileOnly "mezz.jei:jei-1.20.1-forge-api:15.49.0.188"` + `runtimeOnly "mezz.jei:jei-1.20.1-forge:15.49.0.188"`
-  - 1.21.1：`jei-1.21.1-forge-api:19.44.0.401`；26.x：`jei-26.2-neoforge-api:30.24.0.165`（同式）
+  - 1.21.1：`jei-1.21.1-forge-api:19.44.0.401`
+  - 26.2 线：`jei-26.2-neoforge-api:30.24.0.165`（2026-08 实测值；2026-09 复核该 artifact 已到 30.35.0.224）
+  - 26.3 线：`jei-26.3-neoforge-api:31.6.0.25`（2026-09 metadata `<latest>` 实测；同式，`-api` 编译期 + 本体 runtimeOnly）
 - curse.maven 兜底：`compileOnly "curse.maven:jei-238222:<fileId>"`（fileId 从 https://www.curseforge.com/minecraft/mc-mods/jei/files 复制）
-- 本时代常用版本：15.49.0.188 / 19.44.0.401 / 30.24.0.165
+- 本时代常用版本：15.49.0.188 / 19.44.0.401 / 30.24.0.165（26.2）/ 31.6.0.25（26.3）
 - API 入口（包 `mezz.jei.api`，分支 1.20.1 的 CommonApi 模块源码实测）：
   - **`@JeiPlugin` 注解**（`mezz.jei.api.JeiPlugin`，javadoc 实测：所有 IModPlugin 必须带此注解且**有无参构造器**——老教程「`public static final IModPlugin INSTANCE`」写法在现代线无效）+ `IModPlugin` 接口：`getPluginUid()`（唯一 id）、`registerItemSubtypes`、`registerCategories(IRecipeCategoryRegistration)`、`registerRecipes(IRecipeRegistration)`、`registerRecipeTransferHandlers`、`registerVanillaCategoryExtensions` 等（default 方法清单实测）
   - `IRecipeCategory<T>` / `IRecipeRegistration.addRecipes` / `IRecipeManager`、runtime 交互
@@ -262,18 +266,18 @@ public class MyJeiPlugin implements IModPlugin {
     }
 }
 ```
-- 状态/注意：开源（MIT）；26.x 走 `-neoforge` artifact；-api 与本体版本号必须一致（metadata release 同源）；运行时玩家需装 JEI 本体
+- 状态/注意：开源（MIT）；26.x 走 `-neoforge` artifact，**artifact 名带 MC 版本**（`jei-26.2-…` / `jei-26.3-…`），26.2 与 26.3 是两个不同 artifact，别混用；-api 与本体版本号必须一致（metadata release 同源）；运行时玩家需装 JEI 本体
 - 官方/参考链接：源码 https://github.com/mezz/JustEnoughItems （分支 `1.20.1` / `1.21.1` / `26.2`，API 在 CommonApi/src/main/java/mezz/jei/api）、Wiki https://github.com/mezz/JustEnoughItems/wiki
-- 核实来源：cfwidget API（id 238222）；maven.blamejared.com 三线 metadata（15.49.0.188 / 19.44.0.401 / 30.24.0.165）；GitHub 1.20.1（JeiPlugin.java 注解 javadoc、IModPlugin 方法清单）
+- 核实来源：cfwidget API（id 238222）；maven.blamejared.com 三线 metadata（15.49.0.188 / 19.44.0.401 / 30.24.0.165）；**2026-09 复核 `jei-26.3-neoforge-api` latest = 31.6.0.25、`jei-26.2-neoforge-api` latest = 30.35.0.224**；GitHub 1.20.1（JeiPlugin.java 注解 javadoc、IModPlugin 方法清单）
 
 ## REI（Roughly Enough Items，shedaniel）
 - CurseForge：https://www.curseforge.com/minecraft/mc-mods/roughly-enough-items（projectId 310111，核实 2026-08-16；来源 https://api.cfwidget.com/minecraft/mc-mods/310111 返回 `"id":310111`、title "Roughly Enough Items Fabric/Forge/NeoForge (REI)"）
-- 简介：JEI 替代配方查看器（可自定义、多 loader）。三时代：1.20.1 = 12.1.x（Forge）；1.21.1 = 16.0.x（NeoForge）；26.x = 26.2.821（architectury release 实测）。modid：`roughlyenoughitems`。
+- 简介：JEI 替代配方查看器（可自定义、多 loader）。三时代：1.20.1 = 12.1.x（Forge）；1.21.1 = 16.0.x（NeoForge）；26.2 = 26.2.821（architectury release 实测）；**26.3 无发布**（2026-09 复核 `RoughlyEnoughItems-api-neoforge` metadata 只有 `26.2.821` / `26.2.820`，无任何 `26.3.*` 条目）。modid：`roughlyenoughitems`。
 - 官方 maven：有 — https://maven.architectury.dev （老 README 的 maven.shedaniel.me 已停用，plan 实测）；group `me.shedaniel`，三件套按 loader 分（目录实测）：`RoughlyEnoughItems-api-<loader>` / `RoughlyEnoughItems-default-plugin-<loader>` / `RoughlyEnoughItems-<loader>`（forge/neoforge/fabric）
   - 1.20.1：`compileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:12.1.785"` + `compileOnly "me.shedaniel:RoughlyEnoughItems-default-plugin-forge:12.1.785"` + `runtimeOnly "me.shedaniel:RoughlyEnoughItems-forge:12.1.785"`
-  - 26.x：同式 `-neoforge` 系 `26.2.821`
+  - 26.2 线：同式 `-neoforge` 系 `26.2.821`（**26.3 线未发布**，2026-09 metadata 实测）
 - curse.maven 兜底：`compileOnly "curse.maven:roughly-enough-items-310111:<fileId>"`（fileId 从 Files 页复制）
-- 本时代常用版本：12.1.785（1.20.1，Modrinth 实测）/ 16.0.799（1.21.1）/ 26.2.821（26.x）
+- 本时代常用版本：12.1.785（1.20.1，Modrinth 实测）/ 16.0.799（1.21.1）/ 26.2.821（26.2 线）
 - API 入口（包 `me.shedaniel.rei.api`，分支 12.x-1.20 源码实测）：
   - 插件注解按 loader 分：Forge = `me.shedaniel.rei.forge.REIPlugin`（forge/src 目录实测）、NeoForge = `me.shedaniel.rei.neoforge.REIPlugin`、Fabric = `me.shedaniel.rei.fabric.REIPlugin`
   - `api.common.plugins`：`REIPlugin` / `REIClientPlugin`（extends REIPlugin，default 方法实测：`registerCategories(CategoryRegistry)`、`registerDisplays(DisplayRegistry)`、`registerScreens(ScreenRegistry)`、`registerEntries`、`registerTransferHandlers`、`registerEntryRenderers`…）/ `REIServerPlugin` / `REIPluginProvider`
@@ -293,13 +297,13 @@ public class MyReiPlugin implements REIClientPlugin {
     }
 }
 ```
-- 状态/注意：开源（MIT，文件头实测）；三 loader 坐标同构但注解包不同（forge/neoforge/fabric）；服务端插件枚举坑（Dist.CLIENT）；版本号跨度大（12.1.x → 26.2.x），坐标与 MC 线一一对应
+- 状态/注意：开源（MIT，文件头实测）；三 loader 坐标同构但注解包不同（forge/neoforge/fabric）；服务端插件枚举坑（Dist.CLIENT）；版本号跨度大（12.1.x → 26.2.x；**26.3 无 artifact**），坐标与 MC 线一一对应
 - 官方/参考链接：源码 https://github.com/shedaniel/RoughlyEnoughItems （分支 `12.x-1.20` / `16.x-1.21` / `26.2`）、Wiki https://github.com/shedaniel/RoughlyEnoughItems/wiki
-- 核实来源：cfwidget API（id 310111）；maven.architectury.dev metadata（api-neoforge 26.2.821）；Modrinth rei（12.1.785）；GitHub 12.x-1.20（forge/me/shedaniel/rei/forge/REIPlugin.java、api/common/plugins 与 api/client/plugins 方法清单）
+- 核实来源：cfwidget API（id 310111）；maven.architectury.dev metadata（api-neoforge 26.2.821；**2026-09 复核同一 metadata：仅 26.2.821 / 26.2.820 两个 26.x 条目，无 26.3**）；Modrinth rei（12.1.785）；GitHub 12.x-1.20（forge/me/shedaniel/rei/forge/REIPlugin.java、api/common/plugins 与 api/client/plugins 方法清单）
 
 ## Patchouli（帕秋莉手册，Vazkii）
 - CurseForge：https://www.curseforge.com/minecraft/mc-mods/patchouli（projectId 306770，核实 2026-08-16；来源 https://api.cfwidget.com/minecraft/mc-mods/306770 返回 `"id":306770`）
-- 简介：数据驱动手册模组。三时代：1.20.1 = 1.20.1-85-FORGE；1.21.1 = 1.21.1-93-NEOFORGE（blamejared release 实测）；**26.x 无发布**（metadata 无；GitHub 26.1 分支存在但未发版）。FABRIC 同版本并存。modid：`patchouli`。
+- 简介：数据驱动手册模组。三时代：1.20.1 = 1.20.1-85-FORGE；1.21.1 = 1.21.1-93-NEOFORGE（blamejared release 实测）；**26.x 无发布**（metadata 无；GitHub 26.1 分支存在但未发版；2026-09 复核 blamejared metadata 仍无 26.x，最高 1.20.1-86-*-SNAPSHOT / 1.21.1-93）。FABRIC 同版本并存。modid：`patchouli`。
 - 官方 maven：有 — https://maven.blamejared.com ；`compileOnly "vazkii.patchouli:Patchouli:1.20.1-85-FORGE"`（1.21.1 线 `1.21.1-93-NEOFORGE`）
 - curse.maven 兜底：`compileOnly "curse.maven:patchouli-306770:<fileId>"`（fileId 从 Files 页复制）
 - 本时代常用版本：1.20.1-85-FORGE / 1.21.1-93-NEOFORGE
@@ -324,7 +328,7 @@ PatchouliAPI.instance().registerMultiblock(
 //    book.json（name/landing_text/creative_tab/model）+ category/*.json + entry/*.md，
 //    格式以官方 Wiki 与本体 Patchouli 资源（assets/patchouli/patchouli_books）为模板
 ```
-- 状态/注意：开源（VazkiiMods/Patchouli）；26.x 无发布（GitHub 26.1 分支开发中）；书数据驱动——改书不动代码；`instance()` 有 no-op stub，软依赖下直接调用也安全
+- 状态/注意：开源（VazkiiMods/Patchouli）；26.x 无发布（GitHub 26.1 分支开发中；26.3 亦无，2026-09 复核）；书数据驱动——改书不动代码；`instance()` 有 no-op stub，软依赖下直接调用也安全
 - 多版本线：1.20.1（-FORGE）/ 1.21.1（-NEOFORGE）与 FABRIC 同版本并存（metadata 实测），坐标按 loader 后缀选；写多 loader 附属时书资源完全复用，仅依赖坐标不同
 - 官方/参考链接：源码 https://github.com/VazkiiMods/Patchouli （分支 `1.20.1` / `1.21.x` / `26.1`，API 在 Xplat/src/main/java/vazkii/patchouli/api）、Wiki https://github.com/VazkiiMods/Patchouli/wiki
 - 核实来源：cfwidget API（id 306770）；maven.blamejared.com/vazkii/patchouli/Patchouli metadata（1.20.1-85-FORGE / 1.21.1-93-NEOFORGE、无 26.x）；GitHub 1.20.1（PatchouliAPI.java 方法清单 + no-op stub javadoc）

@@ -6,4 +6,10 @@ pluginManagement {
     }
 }
 
+// foojay：让 build.gradle 的 java.toolchain 能在缺 JDK 时自动下载（26.x 线目标 Java 25，
+// 环境 JDK 往往更旧）。与 paper / neoforge 模板保持同一版本。
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
 rootProject.name = "{{name}}"

@@ -72,7 +72,7 @@
           - Modern 1.20.5-1.21.x: JDK 21; NeoForge uses neoforge.mods.toml; Fabric uses
             loom + official mojmap mappings; Paper/Bukkit API with api-version set.
           - 26.x: JDK 25; Minecraft ships unobfuscated — mojmap is the official mapping
-            set, yarn is discontinued; NeoForge 26.2 is beta; Fabric events are Event<T>
+            set, yarn is discontinued; NeoForge 26.3 is beta-only (26.2 has non-beta builds); Fabric events are Event<T>
             static fields with no global event bus.
           - Modern lines: JDKs are auto-provisioned by foojay toolchains — do not manage
             them by hand. Legacy lines: explicit JAVA_HOME=JDK 8 required; you inherit the
@@ -171,7 +171,7 @@
           - Modern 1.20.5-1.21.x: JDK 21; NeoForge uses neoforge.mods.toml; Fabric uses
             loom + official mojmap mappings; Paper/Bukkit API with api-version set.
           - 26.x: JDK 25; Minecraft ships unobfuscated — mojmap is the official mapping
-            set, yarn is discontinued; NeoForge 26.2 is beta; Fabric events are Event<T>
+            set, yarn is discontinued; NeoForge 26.3 is beta-only (26.2 has non-beta builds); Fabric events are Event<T>
             static fields with no global event bus.
           - Modern lines: JDKs are auto-provisioned by foojay toolchains — do not manage
             them by hand. Legacy lines: explicit JAVA_HOME=JDK 8 required; you inherit the
@@ -271,7 +271,7 @@
           - Modern 1.20.5-1.21.x: JDK 21; NeoForge uses neoforge.mods.toml; Fabric uses
             loom + official mojmap mappings; Paper/Bukkit API with api-version set.
           - 26.x: JDK 25; Minecraft ships unobfuscated — mojmap is the official mapping
-            set, yarn is discontinued; NeoForge 26.2 is beta; Fabric events are Event<T>
+            set, yarn is discontinued; NeoForge 26.3 is beta-only (26.2 has non-beta builds); Fabric events are Event<T>
             static fields with no global event bus.
           - Modern lines: JDKs are auto-provisioned by foojay toolchains — do not manage
             them by hand. Legacy lines: explicit JAVA_HOME=JDK 8 required; you inherit the
@@ -364,7 +364,7 @@
           - Modern 1.20.5-1.21.x: JDK 21; NeoForge uses neoforge.mods.toml; Fabric uses
             loom + official mojmap mappings; Paper/Bukkit API with api-version set.
           - 26.x: JDK 25; Minecraft ships unobfuscated — mojmap is the official mapping
-            set, yarn is discontinued; NeoForge 26.2 is beta; Fabric events are Event<T>
+            set, yarn is discontinued; NeoForge 26.3 is beta-only (26.2 has non-beta builds); Fabric events are Event<T>
             static fields with no global event bus.
           - Modern lines: JDKs are auto-provisioned by foojay toolchains — do not manage
             them by hand. Legacy lines: explicit JAVA_HOME=JDK 8 required; you inherit the

@@ -78,7 +78,7 @@ export function apply(ctx, config = {}) {
       minecraftVersion: {
         type: 'string',
         required: true,
-        description: 'Target Minecraft version, e.g. 1.7.10, 1.12.2, 1.16.5, 1.21.8, 1.21.x, 26.2. Supported lines per platform are listed in the error when unknown.',
+        description: 'Target Minecraft version, e.g. 1.7.10, 1.12.2, 1.16.5, 1.21.8, 1.21.x, 26.3. Supported lines per platform are listed in the error when unknown.',
       },
       javaVersion: {
         type: 'integer',

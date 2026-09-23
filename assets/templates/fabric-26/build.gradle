@@ -10,7 +10,7 @@ version = "0.1.0"
 dependencies {
     minecraft "com.mojang:minecraft:{{mcVersion}}"
     // 26.1 起 Minecraft 不再混淆，Mojang 官方类名直接可用，因此没有映射声明
-    // （26.x 无 yarn，loom 26.1+ 对未混淆版本默认即官方名；官方 26.2 分支示例即不写映射行）。
+    // （26.x 无 yarn，loom 26.1+ 对未混淆版本默认即官方名；官方 26.2 / 26.3 分支示例都不写映射行）。
     // 依赖配置用 implementation（1.x 时代是 mod 依赖配置，26.x 用普通 implementation）。
     implementation "net.fabricmc:fabric-loader:{{loaderVersion}}"
     implementation "net.fabricmc.fabric-api:fabric-api:{{fabricApiVersion}}"
@@ -22,12 +22,13 @@ processResources {
     }
 }
 
-tasks.withType(JavaCompile).configureEach {
-    options.release = {{javaVersion}}
-}
-
+// 目标 Java 版本用 toolchain 声明（不是 options.release + source/targetCompatibility）：
+// 环境 JDK 低于目标时（例如本机默认 Java 22、26.x 线目标 25），只有 toolchain 才会
+// 让 foojay 自动 provision 对应 JDK；否则 javac 会直接报「不支持发行版本 25」。
+// 实测：2026-09，Java 22 环境 + 目标 25，加 toolchain 后构建成功。
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.toVersion({{javaVersion}})
-    targetCompatibility = JavaVersion.toVersion({{javaVersion}})
+    toolchain {
+        languageVersion = JavaLanguageVersion.of({{javaVersion}})
+    }
 }

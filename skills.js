@@ -37,7 +37,7 @@ const SKILLS = [
   },
   {
     name: 'minecraft-neoforge-mod',
-    description: 'Develop NeoForge mods for 1.20.1, 1.21.x and 26.2. Project setup with the net.neoforged.moddev Gradle plugin (2.0.144; legacyforge 2.0.91 for 1.20.1), NeoForm pipeline, neoforge.mods.toml mandatory fields, @Mod and event bus, DeferredRegister, data generation, runClient/runServer/runData, optional Parchment mappings. Use when creating or extending a NeoForge mod, or fixing moddev/NeoForm/mods.toml problems.',
+    description: 'Develop NeoForge mods for 1.20.1, 1.21.x and 26.x (26.2 has non-beta builds; 26.3 is beta-only so far). Project setup with the net.neoforged.moddev Gradle plugin (2.0.147; legacyforge 2.0.91 for 1.20.1), NeoForm pipeline, neoforge.mods.toml mandatory fields, @Mod and event bus, DeferredRegister, data generation, runClient/runServer/runData, optional Parchment mappings. Use when creating or extending a NeoForge mod, or fixing moddev/NeoForm/mods.toml problems.',
   },
   {
     name: 'minecraft-spigot-legacy',

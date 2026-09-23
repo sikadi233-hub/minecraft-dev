@@ -2,7 +2,7 @@
 
 > 前置：无。本技能是**开工前的第一步**——无论什么平台，信息不足先核对。
 > **铁律：提问用 `ask_user_question` 一次性批量问（问题数组），禁止挤牙膏式逐条追问；用户已给的信息绝不重复问；用户说"你决定"时用 `references/api/intake-matrix.md` 的默认值并说明理由。**
-> 核对日期：2026-08。
+> 核对日期：2026-09（26.3 为当前正式版：Paper 仅 alpha / NeoForge 仅 beta / CIT 前端最高只到 26.2）。
 
 ## 1. 定位与适用
 
@@ -25,7 +25,7 @@
 | 新 mod | 加载器（Forge/Fabric/NeoForge）、MC 版本、加载器版本 | NeoForge 或 Fabric + 最新稳定线 |
 | 老线 mod | 时代（FG2/3/5 决定 wrapper）、Forge 版本、**是否混合服** | 按时代钉选 |
 | 附属 addon | 目标模组 + MC 版本 + 模组版本、扩展点 | 目标模组最新版本 |
-| 资源包（pack） | 目标 MC 版本、**包类型**、**客户端前端**（OptiFine/citresewn/原版）、分版、服务端侧（自定义物品/改名） | 26.2 + citresewn（按实际客户端） |
+| 资源包（pack） | 目标 MC 版本、**包类型**、**客户端前端**（OptiFine/citresewn/原版）、分版、服务端侧（自定义物品/改名） | 26.2 + citresewn（**26.3 没有 CIT 前端**——Modrinth 上 cit-resewn-continuation / cit-resewn-fork 最高只到 26.2，2026-09 实测；纯原版包才可 26.3） |
 | 跨服/群组 | BungeeCord/Velocity、是否 Folia | 单服 |
 | 兼容性 | 必须兼容的插件/模组列表（softdepend） | 无 |
 
@@ -33,7 +33,7 @@
 
 ```text
 问题数组（同一 ask_user_question 调用）：
-1. MC 版本？→ 选项：1.21.8（Recommended）/ 1.20.1 / 26.2 / 1.12.2 / 1.7.10
+1. MC 版本？→ 选项：1.21.8（Recommended）/ 1.20.1 / 26.3 / 26.2 / 1.12.2 / 1.7.10
 2. 平台/核心？→ 选项：Paper（Recommended）/ Spigot / Purpur / Folia / 混合服（Mohist/CatServer）
 3. 要兼容哪些插件/模组？（softdepend 列表，如 MMOItems/WorldGuard）
 4. 部署？→ 单服（Recommended）/ 群组（BungeeCord/Velocity）

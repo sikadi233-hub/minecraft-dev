@@ -25,7 +25,7 @@ for (const spec of ['../skills.js', '../tools.js']) {
   })
 }
 
-test('module ../preset.js exports name/inject/apply with no service deps', async () => {
+test('module ../preset.js exports name/inject/apply with the preset service injected', async () => {
   let mod
   try {
     mod = await import('../preset.js')
@@ -35,7 +35,9 @@ test('module ../preset.js exports name/inject/apply with no service deps', async
   }
   assert.equal(typeof mod.name, 'string')
   assert.ok(Array.isArray(mod.inject))
-  assert.equal(mod.inject.length, 0)
+  // The preset registry is injected so `apply` sees it on dsh 0.1.7, whose
+  // registry row initializes after third-party rows (both dsh lines publish it).
+  assert.deepEqual(mod.inject, ['agentPresets'])
   assert.equal(typeof mod.apply, 'function')
 })
 

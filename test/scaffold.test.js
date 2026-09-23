@@ -172,7 +172,10 @@ test('scaffold fabric 1.21.11 pins loom/loader/fabric-api coordinates', async ()
     assert.match(build, /loom\.officialMojangMappings\(\)/)
     assert.match(build, /modImplementation "net\.fabricmc:fabric-loader:0\.19\.3"/)
     assert.match(build, /modImplementation "net\.fabricmc\.fabric-api:fabric-api:0\.141\.6\+1\.21\.11"/)
-    assert.match(build, /options\.release = 21/)
+    // v0.9: any fabric target now goes through the foojay-backed toolchain.
+    assert.match(build, /languageVersion = JavaLanguageVersion\.of\(21\)/)
+    assert.doesNotMatch(build, /options\.release/)
+    assert.match(await read('settings.gradle'), /foojay-resolver-convention/)
 
     const modJson = await read('src/main/resources/fabric.mod.json')
     assert.match(modJson, /"id": "my-plugin"/)
@@ -198,7 +201,12 @@ test('scaffold fabric 26.2 uses the native loom plugin without remap or mappings
     assert.doesNotMatch(build, /modImplementation/)
     assert.match(build, /implementation "net\.fabricmc:fabric-loader:0\.19\.3"/)
     assert.match(build, /implementation "net\.fabricmc\.fabric-api:fabric-api:0\.157\.0\+26\.2"/)
-    assert.match(build, /options\.release = 25/)
+    // v0.9: the toolchain replaces options.release + source/targetCompatibility
+    // so foojay can provision the JDK when the ambient one is older than 25.
+    assert.match(build, /toolchain \{/)
+    assert.match(build, /languageVersion = JavaLanguageVersion\.of\(25\)/)
+    assert.doesNotMatch(build, /sourceCompatibility/)
+    assert.match(await read('settings.gradle'), /foojay-resolver-convention/)
 
     const modJson = await read('src/main/resources/fabric.mod.json')
     assert.match(modJson, /"java": ">=25"/)
@@ -206,6 +214,27 @@ test('scaffold fabric 26.2 uses the native loom plugin without remap or mappings
 
     const props = await read('gradle/wrapper/gradle-wrapper.properties')
     assert.match(props, /gradle-9\.5\.1-bin\.zip/)
+  } finally {
+    await rm(target, { recursive: true, force: true })
+  }
+})
+
+test('scaffold fabric 26.3 pins the verified coordinate set and a provisioned toolchain', async () => {
+  const { target, read } = await scaffoldPlatform('fabric', '26.3')
+  try {
+    const build = await read('build.gradle')
+    // loom stays on 1.17.x: 1.18.2 refuses to load on a Java 22 Gradle JVM.
+    assert.match(build, /net\.fabricmc\.fabric-loom' version "1\.17\.21"/)
+    assert.doesNotMatch(build, /fabric-loom-remap/)
+    assert.match(build, /implementation "net\.fabricmc:fabric-loader:0\.19\.5"/)
+    assert.match(build, /implementation "net\.fabricmc\.fabric-api:fabric-api:0\.161\.0\+26\.3"/)
+    assert.match(build, /toolchain \{/)
+    assert.match(build, /languageVersion = JavaLanguageVersion\.of\(25\)/)
+    assert.match(await read('settings.gradle'), /foojay-resolver-convention/)
+
+    const modJson = await read('src/main/resources/fabric.mod.json')
+    assert.match(modJson, /"java": ">=25"/)
+    assert.match(modJson, /"minecraft": "~26\.3"/)
   } finally {
     await rm(target, { recursive: true, force: true })
   }

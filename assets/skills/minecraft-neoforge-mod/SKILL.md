@@ -1,16 +1,17 @@
 # NeoForge 模组开发（minecraft-neoforge-mod）
 
-> 前置：同时加载 minecraft-java-build（构建/Gradle/JDK 问题先看它）。本技能覆盖 1.20.1（legacyforge 线）、1.21.x、26.2 三线。
+> 前置：同时加载 minecraft-java-build（构建/Gradle/JDK 问题先看它）。本技能覆盖 1.20.1（legacyforge 线）、1.21.x、26.2、26.3 四线。
 > **铁律：API 签名一律 `read_file` 查 `references/api/`，禁止凭记忆写签名。** 参考里没有的，用 web 工具查官方文档（docs.neoforged.net / projects.neoforged.net），不要编。
-> 核对日期：2026-08。
+> 核对日期：2026-09（26.3 上线复核：moddev 2.0.147、26.3 仅 `-beta`（26.3.0.12-beta）、Java 25；26.2 线坐标不变）。
 
 ## 1. 定位
 
-- NeoForge 是 Forge 的继任者（1.20.1 起分叉，自研加载器与 API；20.2.x 起用独立版本号）。本技能支持三线：
+- NeoForge 是 Forge 的继任者（1.20.1 起分叉，自研加载器与 API；20.2.x 起用独立版本号）。本技能支持四线：
   - **1.20.1**：官方路线是 **legacyforge 插件 + Forge 47.1.3 坐标**（`net.neoforged.moddev.legacyforge` 2.0.91，NeoForge 自研 1.20.1 版本已 EOL，官方 MDK 现状即此形态）；元数据走老式 `mods.toml`（javafml）。
   - **1.21.1（独立钉选线）**：`net.neoforged.moddev` 2.0.144 + NeoForge **21.1.249**；元数据 `neoforge.mods.toml`，但 **必须显式声明 `modLoader="javafml"` + `loaderVersion`**——javafml 默认化从 21.11 起，1.21.1 缺这两个字段客户端直接拒载（`Missing ModLoader`）。模板目录 `neoforge-1.21.1`（与 1.21 线同构，仅这两字段与坐标不同）。
   - **1.21.x（默认主流线，1.21.11）**：`net.neoforged.moddev` 2.0.144 + NeoForge 21.11.45；元数据 `neoforge.mods.toml`（新形态）。
-  - **26.2（新线，beta 状态）**：同 moddev 2.0.144 + NeoForge 26.2.0.59；2026-06 起为 beta 构建，官方已出 `26.2.0-stable` tag，生态仍在跟进（部分模组库滞后）。
+  - **26.2（26.x 前一线，模板钉选）**：`net.neoforged.moddev` 2.0.144 + NeoForge **26.2.0.59**（模板钉选值；maven 上 26.2 已发到 26.2.0.88）。2026-06 起的 26.x 首线，生态仍在跟进（部分模组库滞后）。
+  - **26.3（当前 26.x，2026-09-15 发布，仅 beta）**：`net.neoforged.moddev` **2.0.147** + NeoForge **26.3.0.12-beta**。**maven.neoforged.net 上 26.3 目前只有 `-beta` 构建**（26.3.0.0-beta … 26.3.0.12-beta，无任何非 beta 版本，2026-09 实测）——拿 26.3 做生产项目前先确认这个状态；生态未跟上，优先 1.21.11 或 26.2 线。
 - moddev（ModDevGradle）= 官方 Gradle 插件，内置 **NeoForm** 反编译管线（把混淆 Minecraft 反编译为官方映射的可用源码），`neoFormVersion` 可切 vanilla 模式。
 
 ## 2. 版本对应
@@ -21,10 +22,11 @@
 | 1.21.1 | 1.21.1 | `net.neoforged.moddev` 2.0.144 | **21.1.249** | 9.2.1 | 21 |
 | 1.21 | 1.21.11 | `net.neoforged.moddev` 2.0.144 | 21.11.45 | 9.2.1 | 21 |
 | 26 | 26.2 | `net.neoforged.moddev` 2.0.144 | 26.2.0.59 | 9.2.1 | 25 |
+| 26.3 | 26.3 | `net.neoforged.moddev` 2.0.147 | **26.3.0.12-beta（只有 `-beta`，无正式版）** | 9.2.1 | 25 |
 
 - 新项目一律 `mc_scaffold`（platform=neoforge，可选版本）生成，坐标已按上表钉好；不要手动拼版本。
-- 版本核对源：https://projects.neoforged.net （NeoForge 各版本列表）、官方 MDK 仓库（github.com/NeoForgeMDKs）。moddev README 声明**仅支持 NeoForge ≥21.0.x**——1.20.1 必须用 legacyforge 插件。
-- 26.2 线模板无 Parchment 块（官方 MDK 现状）；1.21 线有（Parchment = 社区映射，补方法名/参数名，需接受授权，构建时自动获取）。
+- 版本核对源：https://projects.neoforged.net （NeoForge 各版本列表）、官方 MDK 仓库（github.com/NeoForgeMDKs）；程序化核对用 maven API：`https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge`（26.3 只有 `-beta` 即由它实测）与 `https://maven.neoforged.net/releases/net/neoforged/moddev-gradle/maven-metadata.xml`（moddev 插件版本）。moddev README 声明**仅支持 NeoForge ≥21.0.x**——1.20.1 必须用 legacyforge 插件。
+- 26.x 线模板（26.2 / 26.3）均无 Parchment 块（官方 MDK 现状）；1.21 线有（Parchment = 社区映射，补方法名/参数名，需接受授权，构建时自动获取）。
 
 ## 3. 项目骨架
 
@@ -40,7 +42,7 @@ src/generated/resources/                     # runData 输出（源集已挂载�
 - `build.gradle` 核心：`neoForge { version = project.neo_version; runs { client / server / data }; mods { "<mod_id>" { sourceSet sourceSets.main } } }`；`neo_version` 来自 `gradle.properties`，与 `minecraft_version` 必须是同一 MC 版本。
 - `processResources { filesMatching('META-INF/neoforge.mods.toml') { expand project.properties } }` 把 toml 里的 `${mod_id}` 等占位符展开成实际值（Gradle 侧 `${}` 展开；脚手架侧 `{{}}` 渲染在前，两者不冲突）。**只对 toml 展开**是有意为之：`expand` 底层是 Groovy 模板引擎，会把它看到的任何「美元号+花括号」片段当表达式求值——其它资源文件（乃至 toml 注释）里出现这类字样会让构建以模板解析失败收场。
 - 1.20.1 差异：插件 `net.neoforged.moddev.legacyforge`，`legacyForge { version = "1.20.1-47.1.3" }`，元数据文件是 `META-INF/mods.toml`（老形态），有 `pack.mcmeta`。
-- 26.2 差异：仅 Java toolchain 25、无 Parchment 块，其余同 1.21。
+- 26.x 差异（26.2 / 26.3 相同）：仅 Java toolchain 25、无 Parchment 块，其余同 1.21。
 
 ## 4. neoforge.mods.toml 必填字段
 
@@ -77,6 +79,7 @@ mandatory=true
 - **入口与事件总线**：`@Mod` 类 + 构造器注入 mod bus（`IEventBus`）；game bus = `NeoForge.EVENT_BUS`；`@SubscribeEvent` / `@EventBusSubscriber(bus = Bus.MOD|GAME)` → `references/api/mod-bus-events.md`
 - **注册**：`DeferredRegister.create(Registries.ITEM, MODID)` + `register(modEventBus)` + `DeferredHolder` → `references/api/deferred-register.md`（1.20.1 线返回 `RegistryObject`）
 - **数据生成**：`GatherDataEvent`（mod bus）+ `DataGenerator.addProvider` + runData → `src/generated/resources` → `references/api/data-generation.md`
+- **MC 26.2 → 26.3 移植变更（Architectury API 21.1 → 22）**：`LootEvent`、扩展菜单（`ExtendedMenuDataProvider`）、`BlockTransformerHooks`、`FuelRegistry`、`BiomeHooks`、`GenerationProperties` → `references/api/changes-26.3.md`（**用 Architectury 的工程写 26.3 前必读**。来源是 Architectury 官方移植指南，**不是** NeoForge 核心 API 的变更清单；未核实的条目标 `UNVERIFIED`）
 - 客户端/服务端隔离：`@EventBusSubscriber(dist = Dist.CLIENT)` / `@OnlyIn(Dist.CLIENT)`（见 mod-bus-events.md 第 4 节）。
 
 ## 6. 构建 / 测试流程
@@ -90,7 +93,7 @@ mandatory=true
 ## 7. 常见坑
 
 1. **moddev 与 NeoForge 版本配对**：moddev 2.x 仅支持 NeoForge ≥21.0.x；1.20.1 用 `legacyforge` 插件（`net.neoforged.moddev.legacyforge`），插件选错 → 构建或加载直接失败。
-2. **26.x 生态未齐**：26.2 是 2026-06 起的新 beta 线，部分模组库/文档滞后；先用 1.21.11 线做生产开发。
+2. **26.3 没有正式版**：maven.neoforged.net 上 26.3 全是 `-beta`（最新 26.3.0.12-beta），生态未跟上；26.2 已有非 beta 构建。要在 26.x 做生产开发，用 26.2 或 1.21.11 线；用 26.3 就要接受 beta 风险，且 26.2 → 26.3 有移植变更（详见 `references/api/changes-26.3.md`，来源为 Architectury 移植指南）。
 3. **`minecraft_version` 与 `neo_version` 必须对应同一 MC**（如 `1.21.11` ↔ `21.11.45`），改版本只动一处 → 构建产物加载即崩。
 4. **modid 三处一致性**：`gradle.properties` 的 `mod_id`、`@Mod(...)` 注解、`neoforge.mods.toml` 的 `modId`（后两者由脚手架渲染一致；手改注意同步）。
 5. **`${}` 与 `{{}}` 双展开**：toml 里 Gradle 占位符是 `${mod_id}`（build 时展开），脚手架占位符是 `{{name}}`（生成时展开）；不要把 `${...}` 写成 `{{...}}`（脚手架会报未定义占位符），反之亦然。
@@ -104,5 +107,5 @@ mandatory=true
 
 ## 8. 开工前核对（intake）
 
-- 必问：**线**（1.20.1 legacyforge / **1.21.1** / 1.21.x（1.21.11）/ 26.2 beta——mods.toml 与 neoforge.mods.toml 不同，1.21.1 还需显式 modLoader）、neo 版本、是否客户端/服务端/双端。
-- 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 1.21.x 主线（26.2 为 beta）。
+- 必问：**线**（1.20.1 legacyforge / **1.21.1** / 1.21.x（1.21.11）/ 26.2 / 26.3（**目前只有 `-beta`**）——mods.toml 与 neoforge.mods.toml 不同，1.21.1 还需显式 modLoader）、neo 版本、是否客户端/服务端/双端。
+- 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 1.21.x 主线（26.x 中 26.3 仅 `-beta`、26.2 生态仍在跟进，二者都别默认）。

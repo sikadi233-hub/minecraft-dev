@@ -2,7 +2,7 @@
 
 > 前置：构建/Java 版本问题同时加载 minecraft-java-build。
 > **铁律：API 签名一律 `read_file` 查 `references/api/`，禁止凭记忆写签名。** 参考里没有的，用 web 工具查官方文档（fabricmc.net / meta.fabricmc.net），不要编。
-> 核对日期：2026-08。版本随生态漂移，表外版本先查官方源再动手。
+> 核对日期：2026-09（26.3 线复核：loader 0.19.5 / loom 1.17.21 / Fabric API `0.161.0+26.3`，并已真机构建通过；26.2 线钉选值不变）。版本随生态漂移，表外版本先查官方源再动手。
 
 ## 1. 定位与家族
 
@@ -11,18 +11,24 @@
 - 与 Forge/NeoForge 的差异：无全局事件总线，事件是 `Event<T>` 静态字段 + `.register(...)`；模组元数据是 `fabric.mod.json`（不是 mods.toml）。
 - **26.1 起 Minecraft 不再混淆**：Mojang 官方类名直接可用、yarn 映射停更——本技能所有模板统一用官方 Mojang 映射（mojmap），1.x 线经 loom 反混淆、26.x 线直接就是官方名。
 
-## 2. 版本对应（模板钉选，2026-08 核对）
+## 2. 版本对应（模板钉选，2026-09 核对）
 
 | MC 线 | 默认 MC 版本 | Java | Gradle wrapper | fabric-loom | fabric-loader | fabric-api |
 |---|---|---|---|---|---|---|
 | 1.20 | 1.20.1 | 17 | 9.5.1 | 1.17.19 | 0.19.3 | `0.92.11+1.20.1` |
 | 1.21 | 1.21.11 | 21 | 9.5.1 | 1.17.19 | 0.19.3 | `0.141.6+1.21.11` |
 | 26 | 26.2 | 25 | 9.5.1 | 1.17.19 | 0.19.3 | `0.157.0+26.2` |
+| 26.3 | **26.3（当前 26.x，2026-09-15 发布）** | 25 | 9.5.1 | **1.17.21** | **0.19.5** | `0.161.0+26.3` |
 
+- 26.x 有**两条独立钉选线**：`26` = 26.2（loom 1.17.19 / loader 0.19.3 / Fabric API `0.157.0+26.2`），`26.3` = 26.3（loom 1.17.21 / loader 0.19.5 / Fabric API `0.161.0+26.3`）。两条线的 MC 全版本互相钉死，写全版本号（如 `26.3`）才命中 26.3 线。
+- 26.3 侧 Fabric 已就绪且**已真机构建通过**（2026-09）：26.3 在 meta.fabricmc.net 标记为 stable，loader 0.19.5 为当前 stable；Architectury 移植指南声明其 26.3 最低目标为 Fabric API **0.160.5**，maven 上已出到 `0.161.0+26.3`（逐日发版，写代码前查 metadata）。
+- ⚠️ **loom 留在 1.17 线是刻意的**：maven 上 loom 最新 stable 是 `1.18.2`，但它要求 **Gradle 自身运行在 Java 25** 上——实测在 Java 22 环境报 `Dependency requires at least JVM runtime version 25. This build uses a Java 22 JVM`，构建直接失败。用 `1.17.21` 则同一环境构建成功（2026-09 实测）。只有在确定用户会用 JDK 25 启动 Gradle 时才升 1.18.x。
+- ⚠️ **fabric 模板的 Java 目标走 toolchain**（v0.9.0 起）：`settings.gradle` 声明 `org.gradle.toolchains.foojay-resolver-convention:1.0.0`，`build.gradle` 用 `java { toolchain { languageVersion = JavaLanguageVersion.of(N) } }`。**不要**改回 `options.release` + source/targetCompatibility：环境 JDK 低于目标时（如环境 22、目标 25）那条路会报「不支持发行版本 25」且无法自举。旧版模板缺这个声明，属已修缺陷。
+- 26.3 的移植变更（Architectury API 21.1 → 22：`LootEvent`、扩展菜单、`BlockTransformerHooks`、`FuelRegistry`、`BiomeHooks`）见 minecraft-neoforge-mod 技能的 `references/api/changes-26.3.md`。**Fabric 核心 API 的 26.3 变更清单本技能未核对**——以 Fabric 官方文档/博客与该版本 changelog 为准，别按记忆写。
 - **映射**：1.20.1 / 1.21.11 用 `mappings loom.officialMojangMappings()`（mojmap）；**26.x 不写映射行**（26.1 起无混淆）。yarn 在 1.x 时代存在但本技能不用，26.x 无 yarn。
 - **构建插件 id**：1.20.1 / 1.21.11（混淆时代）用 `net.fabricmc.fabric-loom-remap`；26.x（无混淆）用原生 `net.fabricmc.fabric-loom`。
-- 坐标查询：版本总览 https://fabricmc.net/develop ；全版本数据 https://meta.fabricmc.net/v2/versions/loader 、`/versions/yarn`（可确认 26.x yarn 条目为 0）、maven 元数据 https://maven.fabricmc.net/ 。
-- loom 官方示例钉的是 `1.17-SNAPSHOT`，模板钉 stable `1.17.19`（maven 实测存在）；改 loom 版本前先查 maven-metadata.xml。
+- 坐标查询：版本总览 https://fabricmc.net/develop ；全版本数据 https://meta.fabricmc.net/v2/versions/loader 、`/versions/game`（确认 26.3 为 stable、快照线为 26.4-snapshot-1）、`/versions/yarn`（可确认 26.x yarn 条目为 0）、maven 元数据 https://maven.fabricmc.net/ 。
+- loom 官方示例钉的是 `1.17-SNAPSHOT`；1.x 线与 26.2 / 26.3 线模板都钉 1.17 系 stable（`1.17.19` / `1.17.21`）；改 loom 版本前先查 maven-metadata.xml，并注意 1.18+ 的 Java 25 Gradle-JVM 要求（见上）。
 
 ## 3. 项目骨架
 
@@ -100,7 +106,7 @@ group=…
 - `schemaVersion` 必须 1；`id` **小写**（字母数字 `_-`，不区分大小写但规范要求小写），建议与 jar 文件名一致。
 - `version` 写成 `"${version}"`，由 build.gradle 的 processResources 从 gradle `version` 展开——**别手写死版本**；展开缺失时 loader 解析失败（坑见第 8 节）。
 - `depends` 三件套最常错：`fabricloader`（**>= 钉版本**）、`minecraft`（**~ 波浪线**，见下）、`java`（**>= Java 级别**，低于游戏所需直接拒绝加载）；`fabric-api: "*"` 表示任意版本。
-- 版本区间语法（fabric.mod.json 规范，SemVer 扩展）：`~1.21.11` = `[1.21.11, 1.22)`（**波浪线升次版本**；`~26.2` = `[26.2, 26.3)`）；`>=1.21.5 <1.22` 用空格组合；`*` 通配任意。`depends` 值也可以是字符串数组（多区间）。
+- 版本区间语法（fabric.mod.json 规范，SemVer 扩展）：`~1.21.11` = `[1.21.11, 1.22)`（**波浪线升次版本**；`~26.2` = `[26.2, 26.3)`、`~26.3` = `[26.3, 26.4)`）；`>=1.21.5 <1.22` 用空格组合；`*` 通配任意。`depends` 值也可以是字符串数组（多区间）。
 - 可选字段：`environment`（`"*"`/`"client"`/`"server"`）、`icon`（`assets/<id>/icon.png`）、`contact`（homepage/sources/issues）、`suggests`/`breaks`/`conflicts`、`mixins`、`accessWidener`。
 
 ## 6. API 要点（签名一律先查 references/api/）
@@ -139,5 +145,5 @@ group=…
 
 ## 9. 开工前核对（intake）
 
-- 必问：**MC 版本**（1.20.1 / 1.21.x / 26.2）、loader 版本（或"最新"）、映射（26.x 起官方 mojmap，yarn 已停）、是否客户端/服务端/双端。
+- 必问：**MC 版本**（1.20.1 / 1.21.x / 26.2 / 26.3）、loader 版本（或"最新"）、映射（26.x 起官方 mojmap，yarn 已停）、是否客户端/服务端/双端。
 - 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 Fabric + 最新稳定线。

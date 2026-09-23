@@ -138,7 +138,7 @@ export function apply(ctx, config = {}) {
       minecraftVersion: {
         type: 'string',
         required: true,
-        description: 'Target Minecraft version, e.g. 1.21.8, 1.12.2, 26.2. Coordinates come from the shipped line matrix.',
+        description: 'Target Minecraft version, e.g. 1.21.8, 1.12.2, 26.3. Coordinates come from the shipped line matrix.',
       },
       javaVersion: {
         type: 'integer',

@@ -1,7 +1,7 @@
 {
   "name": "minecraft-dev",
-  "version": "0.8.0",
-  "description": "Minecraft development skills and tools for DeepSeek Harness: Paper/Spigot server plugins (modern and legacy lines), Fabric, Forge and NeoForge mods, MC 1.7.10 through 26.x, plus the mc_gradle Gradle runner, a second agent preset (Minecraft 架构师 / Astra神的瞥视) whose mc_codex tool drives the user's own Codex CLI as a transparent architect and hands content back through [TODO: Agent B] markers + FILL-SPEC.md, modern major-mod references (Create/Botania/AE2/Mekanism/Ars Nouveau/Farmer's Delight/Curios/JEI/REI/Patchouli), the minecraft-intake task-clarification skill (batch-ask when version/platform/loader details are missing), the check-doc-links link verifier, and a built-in A/B/C/D four-subagent team (subagent_mc_plan/skeleton/content/verify)",
+  "version": "0.9.0",
+  "description": "Minecraft development skills and tools for DeepSeek Harness: Paper/Spigot server plugins (modern and legacy lines), Fabric, Forge and NeoForge mods, MC 1.7.10 through 26.3, plus the mc_gradle Gradle runner, a second agent preset (Minecraft 架构师 / Astra神的瞥视) whose mc_codex tool drives the user's own Codex CLI as a transparent architect and hands content back through [TODO: Agent B] markers + FILL-SPEC.md, modern major-mod references (Create/Botania/AE2/Mekanism/Ars Nouveau/Farmer's Delight/Curios/JEI/REI/Patchouli), the minecraft-intake task-clarification skill (batch-ask when version/platform/loader details are missing), the check-doc-links link verifier, and a built-in A/B/C/D four-subagent team (subagent_mc_plan/skeleton/content/verify). Supports both dsh preset models: the 0.1.5/0.1.6 directory install and the 0.1.7+ agentPresets declaration",
   "type": "module",
   "main": "skills.js",
   "repository": {
@@ -47,8 +47,8 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-tools": "^0.1.5-rc.1",
-    "@deepseek-ai/dsh-skill": "^0.1.5-rc.1",
+    "@deepseek-ai/dsh-tools": "^0.1.5-rc.1 || ^0.1.7-rc.1",
+    "@deepseek-ai/dsh-skill": "^0.1.5-rc.1 || ^0.1.7-rc.1",
     "@deepseek-ai/schemastery": "^3.18.1"
   },
   "scripts": {

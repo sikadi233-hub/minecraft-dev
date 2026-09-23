@@ -1,7 +1,7 @@
 # Minecraft Java 构建知识（minecraft-java-build）
 
 > 前置：任何 Minecraft 项目的构建、Gradle、Java 版本问题，先加载本技能，再配合对应平台技能（minecraft-paper-plugin / minecraft-fabric-mod / minecraft-forge-mod / minecraft-neoforge-mod）使用。
-> 核对日期：2026-08。版本信息随生态更新，遇到表外版本先查官方源。
+> 核对日期：2026-09（26.3 上线复核：Java 仍为 25、Paper 26.3 仅 `-alpha`、NeoForge 26.3 仅 `-beta`、Fabric 26.3 loader 0.19.5 / loom 1.17.21 / Fabric API `0.161.0+26.3`；paper/fabric/neoforge 的 26.3 模板均已真机构建通过）。版本信息随生态更新，遇到表外版本先查官方源。
 
 ## 0. 总原则
 
@@ -18,13 +18,15 @@
 | 1.16.5 | 8~16 | 7.3.3（MDK 钉选，v0.2 模板） | Paper/Spigot | Forge（FG5）、Fabric |
 | 1.18.2 ~ 1.20.4 | 17 | 7.6+ | Paper/Spigot | Forge（1.20.1 止）、Fabric、NeoForge（1.20.1 起） |
 | 1.20.5 ~ 1.21.x | 21 | 8.5+ | Paper/Spigot（稳定主流线） | Fabric、NeoForge |
-| 26.x（当前 26.2 "Chaos Cubed"，2026-06 发布） | 25 | 8.14+（v0.2 模组模板钉 9.2.1/9.5.1） | Paper 已支持 | Fabric 已支持；NeoForge 26.2 为 beta |
+| 26.3（**当前 26.x**，2026-09-15 发布；快照线 26.4-snapshot-1） | 25 | 8.14+（模组模板钉 9.2.1/9.5.1） | Paper **仅 `-alpha` 构建**（最新 `26.3.build.35-alpha`，无 `-stable`） | Fabric 已支持并实测构建通过（loader 0.19.5 / **loom 1.17.21** / Fabric API `0.161.0+26.3`）；NeoForge **仅 `-beta`**（26.3.0.12-beta），实测构建通过 |
+| 26.2（"Chaos Cubed"，2026-06 发布，26.x 前一线） | 25 | 8.14+（模组模板钉 9.2.1/9.5.1） | Paper 已支持（`-stable`，最新 `26.2.build.128-stable`） | Fabric 已支持（模板钉 loader 0.19.3 / loom 1.17.19 / Fabric API `0.157.0+26.2`）；NeoForge 已有非 beta 构建（最新 26.2.0.88，模板钉 26.2.0.59） |
 
 补充：
-- 1.20.5 是 Java 21 分界点（官方把运行要求从 17 升到 21）；26.x 要求 Java 25。
+- 1.20.5 是 Java 21 分界点（官方把运行要求从 17 升到 21）；26.x（26.1 / 26.2 / 26.3）要求 Java 25——**26.3 未升 Java**（客户端 jar `version.json`：`java_component: java-runtime-epsilon`、`java_version: 25`，2026-09 复核）。
 - 版本号从 26.x 起改为「年.次.修订」格式。
 - Gradle 与 JDK 配对：Java 25 需 Gradle ≥ 8.14；Java 21 需 ≥ 8.5；Java 17 需 ≥ 7.3。老线（Gradle 2~4.x）只能跑在 Java 8 上，用现代 JDK 启动会直接失败。
-- 生态普遍滞后原版：1.21.x 仍是 2026 年大多数服务器的稳定选择，26.x 生态尚在跟进。
+- 生态普遍滞后原版：1.21.x 仍是 2026 年大多数服务器的稳定选择。**26.3 已是当前正式版，但生态没跟上：Paper 26.3 只有 `-alpha` 构建、NeoForge 26.3 只有 `-beta` 构建**（2026-09 对 repo.papermc.io / maven.neoforged.net metadata 实测）；要在 26.x 上做生产项目，26.2 或 1.21.x 更稳。
+- 快照线为 **26.4-snapshot-1**（meta.fabricmc.net 版本表实测，2026-09）。
 
 ## 2. Gradle wrapper
 
