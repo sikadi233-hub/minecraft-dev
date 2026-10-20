@@ -75,3 +75,15 @@ description: 一句话说明
 
 - 必问：**MC 版本**（1.20.x / 1.21.x / 26.2 / 26.3（**只有 alpha**））、**核心**（Paper / Spigot / Purpur / Pufferfish / **Folia**——Folia 无 Bukkit 同步调度器，api-version 需 ≥1.19.4 标记，细节见 references/api/folia.md）、兼容插件（softdepend，如 MMOItems / WorldGuard）。
 - 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 Paper + 1.21.x 最新稳定线（26.3 只有 alpha 构建，不做默认）。
+
+## 9. dev 测试
+
+插件**没有 `runClient`**：把打好的 jar 放进真实服务端 `plugins/`，用普通客户端连上去测。
+首启要 `eula.txt` 写 `eula=true`；插件加载失败看 `logs/latest.log` 里的 `Could not load plugin`，
+那不是崩溃报告。Folia 还要确认没有依赖 Bukkit 同步调度器。
+
+**驱动客户端必须用线程输入挂接**：`keybd_event` / `SendInput` 默认无效，GLFW 只认真正持有焦点的
+窗口；要 `AttachThreadInput(自身线程, MC线程, true)` + `SetForegroundWindow` + `SetFocus`，断开后再发键。
+自检判据：挂接后按 F3 能出调试屏。
+
+完整流程见 `../minecraft-java-build/references/dev-test.md`。

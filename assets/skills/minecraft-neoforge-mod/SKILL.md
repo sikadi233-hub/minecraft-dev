@@ -109,3 +109,22 @@ mandatory=true
 
 - 必问：**线**（1.20.1 legacyforge / **1.21.1** / 1.21.x（1.21.11）/ 26.2 / 26.3（**目前只有 `-beta`**）——mods.toml 与 neoforge.mods.toml 不同，1.21.1 还需显式 modLoader）、neo 版本、是否客户端/服务端/双端。
 - 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 1.21.x 主线（26.x 中 26.3 仅 `-beta`、26.2 生态仍在跟进，二者都别默认）。
+
+## 9. dev 测试（把游戏跑起来验证）
+
+构建通过 **不等于** 能跑：`@Shadow` 字段类型写错、缺少运行时前置依赖、mixin 目标方法不存在，
+javac 一个都不报，只在启动那一刻炸。所以交付前要真起 `runServer` + `runClient` 验一遍。
+
+**驱动 dev 客户端必须用线程输入挂接** —— `keybd_event` / `SendInput` 默认无效，GLFW 只认真正持有焦点的
+窗口；要 `AttachThreadInput(自身线程, MC线程, true)` + `SetForegroundWindow` + `SetFocus`，断开挂接后再发键。
+自检判据：挂接后按 F3 能出调试屏。
+
+`mcdev_*` 探针工具是**平台绑定**的（为某个 Forge/NeoForge 版本 dev-mapped 构建），换大版本就装不上——
+1.20.1 的 probe 装不进 1.21.1。这时不要反复重试 `mcdev_prepare`，走手工流程。
+
+NeoForge 这里的三条专属细节：run 配置用 `gameDirectory` 分开客户端/服务端；`runGameTestServer` 在没注册
+gametest 时会抛 `No test functions were given!`（假阴性，用 `runServer`）；`runServer` 需要
+`net.neoforged:DevLaunch`，`maven.neoforged.net` 不通时要给 Gradle 显式加代理参数。
+
+完整流程（输入挂接代码、截图判读、首启无障碍页坑、5 条验收信号、收尾）见
+`../minecraft-java-build/references/dev-test.md`（该文档覆盖 Paper/Spigot/Fabric/Forge/NeoForge 全平台）。

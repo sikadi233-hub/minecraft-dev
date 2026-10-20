@@ -110,3 +110,15 @@ permissions:
 
 - 必问：**1.7.10 vs 1.12.2**（API 差异大）、**混合服核心**（纯 Spigot / KCauldron / Thermos / Mohist / CatServer——事件侧漏与 NMS 差异）、JDK8 环境。
 - 默认：1.12.2 + 纯 Spigot（老线最大生态）；用户信息不足先批量提问（minecraft-intake），禁止猜着开工。
+
+## 10. dev 测试
+
+老线插件同样**没有 `runClient`**：jar 进服务端 `plugins/`，用**同版本的客户端**连。注意整条链路锁在 JDK 8
+（服务端、客户端、构建三方 Java 版本要一致），混合服（KCauldron/Thermos/Mohist/CatServer）要在真实核心上测，
+纯 Spigot 跑通不代表混合服也通。
+
+**驱动客户端必须用线程输入挂接**：`keybd_event` / `SendInput` 默认无效，GLFW 只认真正持有焦点的
+窗口；要 `AttachThreadInput(自身线程, MC线程, true)` + `SetForegroundWindow` + `SetFocus`，断开后再发键。
+自检判据：挂接后按 F3 能出调试屏。
+
+完整流程见 `../minecraft-java-build/references/dev-test.md`。

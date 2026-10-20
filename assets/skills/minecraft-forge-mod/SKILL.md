@@ -102,3 +102,16 @@ pack.mcmeta：1.16.5 为 pack_format 6、1.20.1 为 15（模板已配）。
 
 - 必问：**时代**（1.7.10→FG2+wrapper 7.4.2 / 1.12.2→FG3+4.9 / 1.16.5→FG5+7.3.3 / 1.20.1→FG6+8.8）、Forge 版本、**是否混合服**（Cauldron/Mohist/CatServer——事件侧漏与 NMS 差异）。
 - 时代决定构建链，**必问不猜**；用户信息不足先批量提问（minecraft-intake）。
+
+## 9. dev 测试
+
+构建通过不等于能跑。四个时代都要在 `minecraft { runs { … } }` 里把客户端和服务端 run 目录分开
+（`workingDirectory project.file('run-client')` / `'run-server'`），否则文件锁会让客户端登录超时。
+1.20.1 线还要注意 Placebo 之类"只是 compileOnly"的前置——它是运行时依赖，只放 compileOnly 会让
+dev 服务端启动直接报 `<mod> requires placebo`。
+
+**驱动 dev 客户端必须用线程输入挂接**：`keybd_event` / `SendInput` 默认无效，GLFW 只认真正持有焦点的
+窗口；要 `AttachThreadInput(自身线程, MC线程, true)` + `SetForegroundWindow` + `SetFocus`，断开后再发键。
+自检判据：挂接后按 F3 能出调试屏。
+
+完整流程见 `../minecraft-java-build/references/dev-test.md`。

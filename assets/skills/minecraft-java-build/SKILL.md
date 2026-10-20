@@ -99,3 +99,16 @@ plugins {
 
 - 必问：**平台 + MC 版本**（决定 JDK/wrapper 配对）、是否老线（JDK8 + JAVA_HOME）、spigot 1.7.10 的 vendored jar 是否就位。
 - 默认：按第 1 节版本时代表钉选；用户信息不足先批量提问（minecraft-intake），禁止猜着开工。
+
+## 9. dev 测试（把游戏跑起来验证）
+
+构建通过 **不等于** 能跑：`@Shadow` 字段类型写错、缺少运行时前置依赖、mixin 目标方法不存在、
+插件依赖漏声明，javac 一个都不报，只在启动那一刻炸。交付前要真起服务端 + 客户端验一遍
+（Paper/Spigot 插件没有 `runClient`，用真实服务端 + 普通客户端）。
+
+**驱动 dev 客户端必须用线程输入挂接** —— `keybd_event` / `SendInput` 默认无效，GLFW 只认真正持有焦点的
+窗口；要 `AttachThreadInput(自身线程, MC线程, true)` + `SetForegroundWindow` + `SetFocus`，断开挂接后再发键。
+自检判据：挂接后按 F3 能出调试屏。
+
+完整流程（各平台启动方式、分开 run 目录、输入挂接代码、截图判读、首启无障碍页坑、
+`runGameTestServer` 假阴性、Gradle 代理、5 条验收信号、收尾）见 `references/dev-test.md`。

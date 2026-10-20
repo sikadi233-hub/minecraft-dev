@@ -147,3 +147,15 @@ group=…
 
 - 必问：**MC 版本**（1.20.1 / 1.21.x / 26.2 / 26.3）、loader 版本（或"最新"）、映射（26.x 起官方 mojmap，yarn 已停）、是否客户端/服务端/双端。
 - 用户信息不足先批量提问（minecraft-intake），禁止猜着开工；"你决定"→ 默认 Fabric + 最新稳定线。
+
+## 10. dev 测试
+
+构建通过不等于能跑。`runClient` / `runServer` 默认共用 `run/`，会因文件锁导致客户端登录超时——在
+`loom { runs { client { runDir 'run-client' } server { runDir 'run-server' } } }` 分开。
+
+**驱动 dev 客户端必须用线程输入挂接**：`keybd_event` / `SendInput` 默认无效，GLFW 只认真正持有焦点的
+窗口；要 `AttachThreadInput(自身线程, MC线程, true)` + `SetForegroundWindow` + `SetFocus`，断开后再发键。
+自检判据：挂接后按 F3 能出调试屏。
+
+完整流程（分开 run 目录、输入挂接代码、截图判读、首启无障碍页坑、5 条验收信号、收尾）见
+`../minecraft-java-build/references/dev-test.md`。
