@@ -2,7 +2,7 @@
 
 [![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
 
-Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`)：让 agent 更擅长写 Minecraft 服务端插件与模组，覆盖 **MC 1.7.10 ~ 26.3 全时代**。适配 dsh **≥ 0.1.5-rc.1**（profile/bundle 插件体系；低于此版本请用 0.7.0 及更早版本），覆盖三条线：**0.1.5-rc.x**（目录形态 preset）、**0.1.7-rc.x**（`agentPresets` 声明形态）、**0.2.0-rc.x / 0.2.1-rc.x**。实测：`0.1.5-rc.2` / `0.1.7-rc.1` / `0.2.1-rc.2`。
+Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`)：让 agent 更擅长写 Minecraft 服务端插件与模组，覆盖 **MC 1.7.10 ~ 26.3 全时代**。适配 dsh **≥ 0.1.5-rc.1**（profile/bundle 插件体系；低于此版本请用 0.7.0 及更早版本），覆盖三条线：**0.1.5-rc.x**（目录形态 preset）、**0.1.7-rc.x**（`agentPresets` 声明形态）、**0.2.0-rc.x / 0.2.1-rc.x**。实测：`0.1.5-rc.2` / `0.1.7-rc.1` / `0.2.1-rc.2` / `0.2.1-rc.3` / **`0.2.1-rc.5`**（2026-10-29，独立 profile 实跑）。`0.2.2-alpha` 通道未实测 —— peer 范围会放行（`^0.2.0-rc.2` 覆盖 `0.2.2-alpha.x`），但 API 面未逐个核对，正式使用请留在 rc 线。
 
 已被 [awesome-dsh-plugin](https://awesome-dsh-plugin.com) 收录（`Skills` 分类）。
 

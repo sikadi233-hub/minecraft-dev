@@ -35,7 +35,7 @@ const REPO = fileURLToPath(new URL('../', import.meta.url))
 const RUNTIME_LINES = [
   { line: '0.1.5', declared: '^0.1.5-rc.1', verified: '0.1.5-rc.2' },
   { line: '0.1.7', declared: '^0.1.7-rc.1', verified: '0.1.7-rc.1' },
-  { line: '0.2.0', declared: '^0.2.0-rc.2', verified: '0.2.1-rc.2' },
+  { line: '0.2.0', declared: '^0.2.0-rc.2', verified: '0.2.1-rc.5' },
 ]
 
 const pkg = JSON.parse(await readFile(`${REPO}package.json`, 'utf8'))
