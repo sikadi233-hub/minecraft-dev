@@ -301,10 +301,11 @@ export function renderIndex(options) {
  * classes the skills already mention come first, then the rest are interleaved
  * round-robin across packages, so every package keeps a representative slice.
  * @param {Map<string, string[]>} classes - full class map.
- * @param {Set<string>} priority - simple class names mentioned by skills.
+ * @param {Set<string>} priority - simple class names mentioned by skills or core symbols.
+ * @param {string[]} [packagePriority] - package prefixes to promote ahead of the rest.
  * @returns {[string, string[]][]} ordered entries.
  */
-export function orderClasses(classes, priority) {
+export function orderClasses(classes, priority, packagePriority = []) {
   const packages = new Map()
   const preferred = []
   for (const [name, members] of classes) {
@@ -317,8 +318,14 @@ export function orderClasses(classes, priority) {
     packages.get(pkg).push([name, members])
   }
   preferred.sort(([a], [b]) => a.localeCompare(b))
+  // API-facing packages first, client/GUI noise last, the rest alphabetically.
+  const rank = pkg => {
+    if (packagePriority.some(prefix => pkg === prefix || pkg.startsWith(prefix + '.'))) return 0
+    if (/\.(client|gui|render|rendering|model|screen)(\.|$)/.test(pkg)) return 2
+    return 1
+  }
   const queues = [...packages.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
     .map(([, entries]) => entries.sort(([a], [b]) => a.localeCompare(b)))
   const ordered = [...preferred]
   let drained = false
@@ -373,6 +380,21 @@ export function fitIndex(base, ordered, cap = INDEX_BYTES_CAP) {
 }
 
 /**
+ * Core symbols that must survive truncation even when no skill backticks them.
+ *
+ * The width tier keeps ~100-200 classes per line; without this list a package
+ * like `net.minecraftforge.fml.common` loses `Mod` to its alphabetically earlier
+ * neighbours, which is exactly the class a Forge beginner looks up first.
+ */
+const CORE_SYMBOLS = new Set([
+  'Mod', 'ModInitializer', 'ClientModInitializer', 'DedicatedServerModInitializer', 'ServerLifecycleEvents',
+  'Event', 'EventBusSubscriber', 'DeferredRegister', 'RegistryObject', 'Registry', 'BuiltInRegistries', 'ResourceKey',
+  'Item', 'Block', 'ItemStack', 'BlockEntity', 'Player', 'PlayerEntity', 'ServerPlayer', 'Server', 'Level',
+  'JavaPlugin', 'Bukkit', 'Listener', 'Plugin', 'Command', 'CommandSender', 'Component', 'Scheduler',
+  'MinecraftForge', 'NeoForge', 'FMLCommonSetupEvent', 'ServerStartingEvent', 'IEventBus', 'ItemGroup',
+])
+
+/**
  * Simple class names mentioned anywhere under `assets/skills/**`.
  * Used to decide which classes survive truncation.
  * @returns {Set<string>} simple names, e.g. `Bukkit`.
@@ -392,6 +414,7 @@ export function skillMentionedClasses() {
     }
   }
   walk(skillsRoot)
+  for (const name of CORE_SYMBOLS) mentioned.add(name)
   return mentioned
 }
 

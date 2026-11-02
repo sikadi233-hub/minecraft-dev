@@ -237,22 +237,28 @@ npm run fetch-mod-api-index  # 按 major-mods 技能里的坐标尝试解析 mod
 npm run check-api-index      # 只校验已提交索引的 provenance 是否完整（不联网）
 ```
 
-### 平台 API 签名索引（离线）
+### 平台 API 签名索引（离线，覆盖全部钉选线）
 
-每个平台技能下有一份 `references/api-index/<line>.md`，由 `scripts/fetch-mc-api-index.mjs` 用 `javap -public`（或源码正则）从**钉选版本的工件**提取，用于离线 `grep` 精确签名 —— 因为 web 兜底在不少网络下不可靠，而"凭记忆写签名"是本项目的铁律禁区。
+每个平台技能下有一份 `references/api-index/<MC 版本>.md`，由 `scripts/fetch-mc-api-index.mjs` 用 `javap -public`（或源码正则）从**钉选版本的工件**提取，用于离线 `grep` 精确签名 —— 因为 web 兜底在不少网络下不可靠，而"凭记忆写签名"是本项目的铁律禁区。
 
-| 索引 | 来源工件 | 现状 |
-|---|---|---|
-| `minecraft-paper-plugin/references/api-index/26.3.md`、`26.2.md` | `io.papermc.paper:paper-api`（本地 Gradle 缓存 / repo.papermc.io） | ✅ 已生成（各约 300 KB，含裁剪） |
-| `minecraft-neoforge-mod/references/api-index/26.3.md` | `net.neoforged:neoforge`（本地 `-sources.jar`） | ✅ 已生成 |
-| `minecraft-fabric-mod/references/api-index/26.3.md` | `net.fabricmc.fabric-api` 的 43 个模块 jar（本地 Gradle 缓存） | ✅ 已生成 |
-| `minecraft-forge-mod`、`minecraft-spigot-legacy` | Forge maven / Spigot hub | ⏳ `unavailable`（主机不可达 / 无公开工件），见各自 `COVERAGE.md` |
+线的清单**不单独维护**：脚本直接读 `lib/versions.js` 的 `PLATFORM_LINES`（与 `mc_scaffold` 同一张表），所以索引不会与插件钉选的版本漂移。当前矩阵 19 条线，已生成 **18 条**：
+
+| 平台 | 索引线 | 来源工件 | 深度 |
+|---|---|---|---|
+| Paper | `1.20.6` `1.21.8` `26.2` `26.3` | `paper-api`（26.x 二进制 / 旧线时间戳快照 jar） | 26.3 深层 300 KB，其余 100 KB |
+| NeoForge | `1.20.1` `1.21.1` `1.21.11` `26.2` `26.3` | `neoforge`（本地 `-sources.jar` 优先，其次二进制） | 26.3 深层 300 KB |
+| Forge | `1.7.10` `1.12.2` `1.16.5` `1.20.1` | `forge-<mc>-<ver>-universal.jar` | 1.20.1 深层 |
+| Fabric | `1.20.1` `1.21.11` `26.2` `26.3` | `fabric-api` 的模块 jar（聚合 POM 解析出模块版本） | 26.3 深层 |
+| Spigot | `1.12.2` | `spigot-api`（时间戳快照） | 深层 300 KB |
+| Spigot | `1.7.10` | — | ❌ `snapshot-unresolved`（该线本就要求本地 vendored jar，无公开工件） |
+
+单条线想更深可以单独重跑：`node scripts/fetch-mc-api-index.mjs --platform paper --line 1.20.6`（`--line` 会把该线按深层 300 KB 生成）。
 
 规则与限制：
 
 - **它是检索辅助，不是权威。** 每份文件头有 `PROVENANCE`（坐标、sha1、日期、JDK、`mapping`、`classes=kept/total`），`TRUNCATED` 表示已按预算裁剪（技能里提到的类优先、其余按包轮转，避免整包消失）。
 - **`mapping=srg|intermediary`** 表示工件里 MC 类型是混淆名（`func_/class_`），签名里的类型名**不可直接照抄**，需要 deobf/api 工件。
-- 体积预算：单文件 ≤ 300 KB、全部索引 ≤ 1.5 MB（`test/api-index.test.js` 强制）。
+- 体积预算：单文件 ≤ 300 KB、全部索引 ≤ 3 MB（`test/api-index.test.js` 强制）；当前 18 份 ≈ 2.6 MB，`npm pack` ≈ 640 KB。
 - 生成器**不进入 `npm test`**：网络不稳，索引是可提交的产物，`check-api-index` 只做本地校验。
 - 索引只含**公开成员签名**（类名 + 成员声明），不含源码正文与方法体；各平台的 `NOTICE.md` 记录了坐标、许可证与官方文档链接。
 - 未覆盖/存疑时，退回 `references/api/*.md` 与官方文档 —— 技能里的铁律不变。
