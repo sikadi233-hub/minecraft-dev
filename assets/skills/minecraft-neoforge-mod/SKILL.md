@@ -4,6 +4,8 @@
 > **铁律：API 签名一律 `read_file` 查 `references/api/`，禁止凭记忆写签名。** 参考里没有的，用 web 工具查官方文档（docs.neoforged.net / projects.neoforged.net），不要编。
 > 核对日期：2026-09（26.3 上线复核：moddev 2.0.147、26.3 仅 `-beta`（26.3.0.12-beta）、Java 25；26.2 线坐标不变）。
 
+> **签名索引（离线，可选）**：若 `references/api-index/` 下有对应版本的 `.md`，先 `grep` 它定位精确签名（头部 `TRUNCATED` 表示已裁剪、`mapping=srg|intermediary` 表示 MC 类型是混淆名、不可照抄）；没有索引或索引未覆盖时，退回 `references/api/` 与官方文档。覆盖情况见 `references/api-index/COVERAGE.md`。
+
 ## 1. 定位
 
 - NeoForge 是 Forge 的继任者（1.20.1 起分叉，自研加载器与 API；20.2.x 起用独立版本号）。本技能支持四线：

@@ -4,6 +4,8 @@
 > **铁律：API 签名一律 `read_file` 查 `references/api/`，禁止凭记忆写签名。** 参考里没有的，用 web 工具查官方文档（fabricmc.net / meta.fabricmc.net），不要编。
 > 核对日期：2026-09（26.3 线复核：loader 0.19.5 / loom 1.17.21 / Fabric API `0.161.0+26.3`，并已真机构建通过；26.2 线钉选值不变）。版本随生态漂移，表外版本先查官方源再动手。
 
+> **签名索引（离线，可选）**：若 `references/api-index/` 下有对应版本的 `.md`，先 `grep` 它定位精确签名（头部 `TRUNCATED` 表示已裁剪、`mapping=srg|intermediary` 表示 MC 类型是混淆名、不可照抄）；没有索引或索引未覆盖时，退回 `references/api/` 与官方文档。覆盖情况见 `references/api-index/COVERAGE.md`。
+
 ## 1. 定位与家族
 
 - **Fabric** = 轻量模组加载器，三件套：`fabric-loader`（加载器，改 mods 目录与 fabric.mod.json）、`fabric-loom`（Gradle 构建插件，反混淆/remap/runClient）、**Fabric API**（模块化库集：`fabric-lifecycle-events-v1`、`fabric-command-api-v2`、`fabric-item-group-api-v1`、`fabric-networking-api-v1` 等，需要哪个引哪个——只引 loader 不引 API 也能写 mod，事件/命令/创造栏这类便利 API 都来自 Fabric API）。

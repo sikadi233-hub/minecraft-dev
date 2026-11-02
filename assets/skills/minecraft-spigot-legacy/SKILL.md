@@ -4,6 +4,8 @@
 > **铁律：API 签名一律 `read_file` 查 `references/api/`（bukkit-1.7.10.md / bukkit-1.12.2.md），禁止凭记忆写签名。** 参考里没有的，用 web 工具查老 javadoc 或反编译 vendored jar，不要编。
 > 核对日期：2026-08-16。坐标全部照 v0.3 矩阵钉选值（versions.js spigot 条目），随生态更新。
 
+> **签名索引（离线，可选）**：若 `references/api-index/` 下有对应版本的 `.md`，先 `grep` 它定位精确签名（头部 `TRUNCATED` 表示已裁剪、`mapping=srg|intermediary` 表示 MC 类型是混淆名、不可照抄）；没有索引或索引未覆盖时，退回 `references/api/` 与官方文档。覆盖情况见 `references/api-index/COVERAGE.md`。
+
 ## 1. 定位与家族
 
 - 本技能覆盖 **Spigot/Bukkit 老线插件**：Minecraft 1.7.10 与 1.12.2。这两条线属老 API 时代：无 `api-version` 字段、无 Paper 现代 API、无 Brigadier 命令框架。

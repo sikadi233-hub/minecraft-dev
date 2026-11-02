@@ -4,6 +4,8 @@
 > **铁律：API 签名一律 `read_file` 查 `references/api/`（forge-1.7.10-api.md / forge-1.12.2-api.md / forge-modern-api.md），禁止凭记忆写签名。** 参考里没有的，用 web 工具查官方文档（docs.minecraftforge.net / maven.minecraftforge.net 上的 MDK zip 与 javadoc），不要编。
 > 核对日期：2026-08-16。本技能版本坐标全部照 v0.2 矩阵钉选值，随生态更新（R10）。
 
+> **签名索引（离线，可选）**：若 `references/api-index/` 下有对应版本的 `.md`，先 `grep` 它定位精确签名（头部 `TRUNCATED` 表示已裁剪、`mapping=srg|intermediary` 表示 MC 类型是混淆名、不可照抄）；没有索引或索引未覆盖时，退回 `references/api/` 与官方文档。覆盖情况见 `references/api-index/COVERAGE.md`。
+
 ## 1. 定位与四时代
 
 Forge 是 Minecraft 历史最久、老版本生态最全的模组加载器（2011 年起）。它的开发方式随时代剧烈变化，**年代鉴定是第一技能**：拿到一个 Forge 项目，先看 build.gradle 的 ForgeGradle 版本、`@Mod` 的写法、有无 mods.toml，确定时代，再按时代规则处理。本技能覆盖四个时代，三轴区分：

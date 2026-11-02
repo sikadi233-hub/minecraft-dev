@@ -232,7 +232,32 @@ cp -r <minecraft-dev 仓库>/preset/minecraft ~/.dsh/.agent-presets/
 ```sh
 npm run test         # node --test 单测（纯函数，无 dsh 依赖）
 npm run check-links  # 核对文档链接与 curse.maven projectId（联网；BROKEN=0 为通过）
+npm run fetch-api-index      # 重新生成平台 API 签名索引（本地 Gradle 缓存优先，联网兜底）
+npm run fetch-mod-api-index  # 按 major-mods 技能里的坐标尝试解析 mod API（本地缓存到 .cache/）
+npm run check-api-index      # 只校验已提交索引的 provenance 是否完整（不联网）
 ```
+
+### 平台 API 签名索引（离线）
+
+每个平台技能下有一份 `references/api-index/<line>.md`，由 `scripts/fetch-mc-api-index.mjs` 用 `javap -public`（或源码正则）从**钉选版本的工件**提取，用于离线 `grep` 精确签名 —— 因为 web 兜底在不少网络下不可靠，而"凭记忆写签名"是本项目的铁律禁区。
+
+| 索引 | 来源工件 | 现状 |
+|---|---|---|
+| `minecraft-paper-plugin/references/api-index/26.3.md`、`26.2.md` | `io.papermc.paper:paper-api`（本地 Gradle 缓存 / repo.papermc.io） | ✅ 已生成（各约 300 KB，含裁剪） |
+| `minecraft-neoforge-mod/references/api-index/26.3.md` | `net.neoforged:neoforge`（本地 `-sources.jar`） | ✅ 已生成 |
+| `minecraft-fabric-mod/references/api-index/26.3.md` | `net.fabricmc.fabric-api` 的 43 个模块 jar（本地 Gradle 缓存） | ✅ 已生成 |
+| `minecraft-forge-mod`、`minecraft-spigot-legacy` | Forge maven / Spigot hub | ⏳ `unavailable`（主机不可达 / 无公开工件），见各自 `COVERAGE.md` |
+
+规则与限制：
+
+- **它是检索辅助，不是权威。** 每份文件头有 `PROVENANCE`（坐标、sha1、日期、JDK、`mapping`、`classes=kept/total`），`TRUNCATED` 表示已按预算裁剪（技能里提到的类优先、其余按包轮转，避免整包消失）。
+- **`mapping=srg|intermediary`** 表示工件里 MC 类型是混淆名（`func_/class_`），签名里的类型名**不可直接照抄**，需要 deobf/api 工件。
+- 体积预算：单文件 ≤ 300 KB、全部索引 ≤ 1.5 MB（`test/api-index.test.js` 强制）。
+- 生成器**不进入 `npm test`**：网络不稳，索引是可提交的产物，`check-api-index` 只做本地校验。
+- 索引只含**公开成员签名**（类名 + 成员声明），不含源码正文与方法体；各平台的 `NOTICE.md` 记录了坐标、许可证与官方文档链接。
+- 未覆盖/存疑时，退回 `references/api/*.md` 与官方文档 —— 技能里的铁律不变。
+
+**mod 前置 API** 走另一条路（`npm run fetch-mod-api-index -- --mod-jars <目录>`）：第三方 mod 的派生签名不进 npm 包，索引只写 `.cache/mod-api/`（gitignored）；jar 是 SRG/intermediary 命名时会在文件头标注，别把 MC 类型名当可读。
 
 ### npm 发布（用户已授权自动执行）
 

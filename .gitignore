@@ -2,6 +2,9 @@
 node_modules/
 *.tgz
 
+# API 索引生成器的下载缓存与 mod 索引（本地生成，不发布）
+.cache/
+
 # 过程性开发文档（本地留档即可，不进仓库）
 V0*_PLAN.md
 *_PLAN.md

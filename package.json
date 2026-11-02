@@ -54,7 +54,10 @@
   "scripts": {
     "test": "node --test \"test/*.test.js\"",
     "typecheck": "tsc --noEmit -p jsconfig.json",
-    "check-links": "node scripts/check-doc-links.mjs"
+    "check-links": "node scripts/check-doc-links.mjs",
+    "fetch-api-index": "node scripts/fetch-mc-api-index.mjs --all",
+    "fetch-mod-api-index": "node scripts/fetch-mod-api-index.mjs --from-references",
+    "check-api-index": "node scripts/fetch-mc-api-index.mjs --check"
   },
   "license": "MIT"
 }

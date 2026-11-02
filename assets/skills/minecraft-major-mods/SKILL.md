@@ -4,6 +4,8 @@
 > **铁律：每个模组的坐标/API 入口一律 `read_file` 查 `references/api/mods-1.7.10.md`、`mods-1.12.2.md` 与 `mods-modern.md`，禁止凭记忆写坐标与类名。** 参考里带「未实测」标注的签名，用 web 工具查源码或反编译 jar 核对后再用，不要编。
 > 核对日期：2026-08-16。fileId 等易变值以 CurseForge 文件页「Curse Maven 代码」为准（V03_PLAN R16）。
 
+> **mod 前置 API 索引（本地，不随包发布）**：`npm run fetch-mod-api-index -- --mod-jars <目录>` 会把你手上的 mod jar 索引到 `.cache/mod-api/<线>/`，或 `--from-references` 按本目录的坐标尝试解析。索引头 `mapping=srg|intermediary` 表示 jar 里的 MC 类型是混淆名。拿不到工件时继续用 `references/api/` 与官方文档。
+
 ## 1. 定位与适用
 
 - 本技能覆盖 **1.7.10 / 1.12.2 老线模组附属开发**（addon）：给 Thaumcraft、Tinkers Construct、Botania、Twilight Forest、Applied Energistics 2、Mekanism、IndustrialCraft 2、Thermal Expansion、Draconic Evolution、SlashBlade 等做联动内容。
