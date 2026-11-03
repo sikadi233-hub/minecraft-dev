@@ -7,6 +7,9 @@
       config:
         gradleTimeoutMs: 600000
         outputTailChars: 12000
+        shardedArbitration: auto
+        maxAuditRetries: 3
+        maxCompileRounds: 3
 
     # ── agent preset 自动安装（v0.6.0）──────────────────────────────────────
     # `dsh plugin add` 只装 cordis 插件，不会把 preset 放进 roster 扫描的

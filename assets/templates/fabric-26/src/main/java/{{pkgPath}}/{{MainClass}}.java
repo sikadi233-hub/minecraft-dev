@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
  * 最小模板两者都只打日志；具体逻辑按 SKILL.md 指引写入。
  */
 public class {{MainClass}} implements ModInitializer, ClientModInitializer {
+    // [mc:fields]
     public static final String MOD_ID = "{{name}}";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
@@ -17,6 +18,7 @@ public class {{MainClass}} implements ModInitializer, ClientModInitializer {
     public void onInitialize() {
         // 主入口（客户端 + 服务端都会执行）：在这里注册物品/方块、事件监听、命令等。
         LOGGER.info("{{name}} enabled");
+        // [mc:init]
     }
 
     @Override

@@ -37,6 +37,7 @@ repositories {
 }
 
 dependencies {
+    // [mc:dependencies]
     minecraft "net.minecraftforge:forge:{{mcVersion}}-{{forgeVersion}}"
 }
 

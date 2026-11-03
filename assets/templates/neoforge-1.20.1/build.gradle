@@ -6,6 +6,10 @@ plugins {
     id 'idea'
 }
 
+dependencies {
+    // [mc:dependencies]
+}
+
 version = "0.1.0"
 group = "{{pkg}}"
 

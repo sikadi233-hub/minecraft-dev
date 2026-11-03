@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 
 @Mod({{MainClass}}.MODID)
 public class {{MainClass}} {
+    // [mc:fields]
     public static final String MODID = "{{name}}";
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -18,6 +19,7 @@ public class {{MainClass}} {
         // game bus（NeoForge.EVENT_BUS）：游戏运行期事件；@SubscribeEvent 方法所在对象需先注册。
         // 签名详见 skills/minecraft-neoforge-mod 的 references/api/。
         NeoForge.EVENT_BUS.register(this);
+        // [mc:init]
     }
 
     @SubscribeEvent

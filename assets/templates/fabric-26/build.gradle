@@ -8,6 +8,7 @@ group = "{{pkg}}"
 version = "0.1.0"
 
 dependencies {
+    // [mc:dependencies]
     minecraft "com.mojang:minecraft:{{mcVersion}}"
     // 26.1 起 Minecraft 不再混淆，Mojang 官方类名直接可用，因此没有映射声明
     // （26.x 无 yarn，loom 26.1+ 对未混淆版本默认即官方名；官方 26.2 / 26.3 分支示例都不写映射行）。

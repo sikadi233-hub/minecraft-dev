@@ -8,3 +8,14 @@ node_modules/
 # 过程性开发文档（本地留档即可，不进仓库）
 V0*_PLAN.md
 *_PLAN.md
+# real-machine probe projects (evidence, not sources)
+probe-262*/
+# audit scratch projects (test artefacts)
+arb-scratch/
+
+# local test projects and one-off harnesses (not part of the plugin)
+paper-homes/
+paper-starter/
+addons/
+scripts/accept-0120.mjs
+scripts/smoke-server-262.mjs

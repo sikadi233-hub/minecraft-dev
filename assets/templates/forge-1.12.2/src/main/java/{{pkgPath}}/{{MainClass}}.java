@@ -8,6 +8,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 @Mod(modid = {{MainClass}}.MODID, name = "{{name}}", version = "0.1.0")
 public class {{MainClass}} {
+    // [mc:fields]
     public static final String MODID = "{{name}}";
 
     @EventHandler
@@ -18,6 +19,7 @@ public class {{MainClass}} {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         // TODO: 初始化逻辑。
+        // [mc:init]
     }
 
     @EventHandler

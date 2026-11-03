@@ -2,7 +2,11 @@
 
 [![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
 
-Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`)：让 agent 更擅长写 Minecraft 服务端插件与模组，覆盖 **MC 1.7.10 ~ 26.3 全时代**。适配 dsh **≥ 0.1.5-rc.1**（profile/bundle 插件体系；低于此版本请用 0.7.0 及更早版本），覆盖三条线：**0.1.5-rc.x**（目录形态 preset）、**0.1.7-rc.x**（`agentPresets` 声明形态）、**0.2.0-rc.x / 0.2.1-rc.x**。实测：`0.1.5-rc.2` / `0.1.7-rc.1` / `0.2.1-rc.2` / `0.2.1-rc.3` / **`0.2.1-rc.5`**（2026-10-29，独立 profile 实跑）。`0.2.2-alpha` 通道未实测 —— peer 范围会放行（`^0.2.0-rc.2` 覆盖 `0.2.2-alpha.x`），但 API 面未逐个核对，正式使用请留在 rc 线。
+Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（`dsh`）：让 agent 更擅长写 Minecraft 服务端插件与模组，覆盖 **MC 1.7.10 ~ 26.3 全时代**。v0.12 起提供三样别处没有的东西：**18 份离线 API 签名索引**（`references/api-index/`，钉选线从 1.7.10 到 26.3）、**确定性分片流水线 `mc_arbitrate`**（契约冻结 → brief → 审计 → 合并 → 编译 → 定点路由，全程不调模型）、**21 条高置信静态审计规则**（含 5 条跨分片检查）。许可以 **Apache-2.0 + NOTICE** 发布。
+
+**English:** a Minecraft development plugin for DeepSeek Harness: Paper/Spigot plugins and Fabric/Forge/NeoForge mods across MC 1.7.10-26.3, 18 offline API signature indexes generated from the pinned artefacts, and a deterministic sharded pipeline (`mc_arbitrate`) - contract freeze, per-shard briefs, 21 audit rules, merge, compile-error routing - with no model call inside the engine. Apache-2.0 with NOTICE.
+
+适配 dsh **≥ 0.1.5-rc.1**（profile/bundle 插件体系；低于此版本请用 0.7.0 及更早版本），覆盖三条线：**0.1.5-rc.x**（目录形态 preset）、**0.1.7-rc.x**（`agentPresets` 声明形态；0.1.5~0.1.6 仍是 $DSH_HOME/.agent-presets 目录）、**0.2.0-rc.x / 0.2.1-rc.x**。实测过：`0.1.5-rc.2`、`0.1.7-rc.1`、`0.2.1-rc.2`、`0.2.1-rc.3`、`0.2.1-rc.5`（2026-10-29，独立 profile 实跑）。`0.2.2-alpha` 未实测 —— peer 会放行但 API 未逐条核对。⚠️ **dsh 0.2.0 起有插件兼容性门禁**（`evaluatePluginCompatibility`）：`@deepseek-ai/dsh*` peer 与运行版本不匹配会**拒绝整包**，不是警告。
 
 已被 [awesome-dsh-plugin](https://awesome-dsh-plugin.com) 收录（`Skills` 分类）。
 
@@ -19,11 +23,11 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 
 > **dsh 0.1.7 起 preset 的声明方式变了**，本插件两种都支持并在运行时自动选择：0.1.5–0.1.6 的 preset 是 `$DSH_HOME/.agent-presets/<id>/` 目录（插件启动时拷贝，已存在则不覆盖本地修改）；0.1.7 起 preset 改为 Cordis 声明行（`@deepseek-ai/dsh-agent-preset`）交给 `agentPresets` 服务，插件随之改用 `agentPresets.register()` 提交同一批行（`preset/*/rows.js`）。两种形态由同一个源生成，并由测试锁死一致。
 
-已发布 npm：[`minecraft-dev`](https://www.npmjs.com/package/minecraft-dev)（MIT）｜ 源码：[GitHub](https://github.com/sikadi233-hub/minecraft-dev)
+**许可**：v0.12.0 起 [Apache-2.0](LICENSE) + [NOTICE](NOTICE)；此前版本仍为 MIT。**源码**：[GitHub](https://github.com/sikadi233-hub/minecraft-dev)｜**npm**：[`minecraft-dev`](https://www.npmjs.com/package/minecraft-dev)（线上 latest 为 0.10.1，0.12.x 尚未发布）。
 
 ## 功能一览
 
-### 8 个技能（模型按需加载，不占常驻上下文）
+### 9 个技能（模型按需加载，不占常驻上下文）
 
 | 技能 | 内容 |
 |---|---|
@@ -35,6 +39,7 @@ Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/dee
 | `minecraft-spigot-legacy` | 1.7.10 / 1.12.2 老线 Bukkit 插件 + Cauldron/Thermos/Mohist 混合服说明 + 2 份老线 API 参考 |
 | `minecraft-major-mods` | 大型模组附属开发：28 个模组条目（1.7.10×10 / 1.12.2×8 / 现代×10，含拔刀剑、神秘时代、匠魂、植物魔法、Create、Botania、AE2、Mekanism、Curios、JEI/REI 等），每条含核实过的 curse.maven 坐标与扩展点 |
 | `minecraft-intake` | **任务信息核对（v0.7）**：用户请求写插件/mod/附属但信息不足时，按场景批量提问（版本/平台/加载器/核心/混合端/兼容性/部署），一次问全、不重复问、授权默认 |
+| `minecraft-swarm` | **分片仲裁（v0.12）**：`mc_arbitrate` 的 7 个 action——契约冻结（含线程模型/API 白名单）、三段式 brief、21 条审计规则、合并、编译错误定点路由、升级材料、状态汇总 |
 
 ### 3 个工具
 
@@ -304,3 +309,91 @@ npm run check-api-index      # 只校验已提交索引的 provenance 是否完�
 - `mc_codex` 的 `mode: "app-server"` 走官方 `codex app-server --stdio`（NDJSON JSON-RPC：`initialize` → `initialized` → `thread/start` → `turn/start` → `turn/completed`），**不经过 shell**，所以卡片上的命令是 `"…codex.exe" app-server --stdio`，实际交互是协议而非命令行；prompt 仍然原样放进 `turn/start` 的一个 text input，内容就是 `.dsh/codex-architect.md`。`mode: "exec"` 则走 `cmd.exe /d /s /c` + stdin 重定向（POSIX 走 `/bin/sh -c`）：卡片显示的命令**就是**实际执行的命令。两种模式下 Codex 自身报错（鉴权/额度/网络）都会原样回显，不做归类改写。
 - **app-server 模式的两条协议细节（实测，0.155.0-alpha.9.2）**：① `turn/completed` **不带** usage，token 总量只能从 rollout 的 `event_msg`/`token_count`/`info.total_token_usage.total_tokens` 读，所以 `mc_codex` 会自己去读那个文件的尾部；② 线程的 `source` 由 app-server 协议决定（实测为 `vscode`，`originator` = 客户端名 `DeepSeek Harness`），**不能用参数指定**（`sessionStartSource` 只接受 `startup`/`clear`，`codex exec resume --thread-source vscode` 也不会改已有线程的 source）。
 - **CLI 会话不进 Codex 桌面版列表（实测）**：`codex exec` 线程在 `state_5.sqlite` 里是 `source='exec'`、`has_user_event=0`，而桌面版侧边栏的 `thread/list` 带固定 `sourceKinds` 白名单（只含 `vscode`/`appServer` 一类），所以 App 里找不到；这也是 `mc_codex` 默认改用 app-server 模式的原因——该模式下线程是 `source='vscode'`，实测跑完立刻出现在默认 `thread/list` 结果里。`mode: "exec"` 时仍额外回报 `rolloutPath`，续接用 `codex exec resume <id> "…"`。
+
+## 分片并发与三级仲裁（v0.12.0）
+
+当任务跨 **3 个以上模块**（指令 + 监听 + 存储 + GUI…）时，单线串行容易上下文腐化。v0.12.0 增加一个**确定性仲裁引擎**（工具 `mc_arbitrate`，7 个 action，**全部不调用模型**），把"契约冻结 → 分片并发 → 逐片审计 → 合并 → 编译 → 定点修复"固化成流程；并发本身由 host 用既有 `subagent_mc_content` 驱动（插件不实现调度器）。
+
+| action | 作用 | 产物 |
+|---|---|---|
+| `freeze` | 冻结 interface/DTO 存根、线程模型、事件优先级表、**API 白名单（取自 `references/api-index/<line>.md`）** | `.mcdev/contract/**` |
+| `brief` | 每个分片一份三段式任务书（全局规则 + 契约 + 本片任务），**Block1/2 字节一致**（可测的前缀缓存友好性） | `.mcdev/shards/<id>/BRIEF.md` |
+| `audit` | 21 条高置信规则（16 条分片内 + 5 条跨分片）+ 失败计数（≤3 次熔断） | `audit-findings.json` |
+| `merge` | 依赖（Groovy 与 Kotlin DSL 双方言）、`plugin.yml` 的 commands/permissions、主类 init/shutdown、JSON mod 元数据；**只注入锚点，不重写整份文件** | `reports/merge-report.md` |
+| `route` | 编译错误 → 责任分片；同一缺失符号出现在 ≥50% 分片时判定**契约崩溃**并建议升级 | `compile-routes.json` |
+| `escalate` | 生成交给上游（host / dsh-superagent）的契约热修订材料 | `reports/diff-report.md` |
+| `status` | 每片 brief/manifest/重试/路由计数 + **orchestrator 探测** | `reports/run-status.json` |
+
+**硬约束**：分片不得改主类、`plugin.yml` / `fabric.mod.json` / `mods.toml`、构建脚本或其他分片的包 —— 这些需求写进 `RegistrationManifest.json`，由合并一次应用。所有权重叠时 `merge` **中止且不写任何文件**。
+
+**21 条审计规则**：`async-io-in-listener`、`missing-event-cancel`、`event-priority-mismatch`、`import-outside-allowlist`、`write-outside-scope`、`main-class-touched`、`scheduler-sync-blocking`、`missing-registration`、`listener-not-a-listener`、`public-class-name-mismatch`、`inventory-click-not-cancelled`、`command-executor-not-registered`、`repeating-task-not-cancelled`、`config-key-undeclared`、`legacy-color-code-not-translated`、`unfinished-todo`、`listener-declared-twice`、`duplicate-enable-priority`、`init-order-violation`、`command-permission-unregistered`、`field-type-unresolved`。前 16 条看单个分片内部（阻塞 IO、MONITOR 取消、优先级、白名单、越界写入、类名、GUI 取消、setExecutor、重复任务、配置键、颜色码、TODO…）；后 5 条是**跨分片**检查（同一 listener 被两片注册、onEnablePriority 撞车、初始化了后运行分片拥有的类、命令权限无人声明、字段类型无法从契约解析），只在整项目审计时生效。规则是正则级的：拦截文档化的坑，**编译器仍是最终裁判**；截断索引下的缺失只报 warning。其中 8 条新增于 0.12.9（GUI 点击未取消、监听器未实现 Listener、命令未接 setExecutor、重复任务未取消、配置键未声明、颜色码未翻译、类名与文件名不符、遗留 TODO），全部有正/反用例。规则是正则级的：拦截的是文档化的坑，**编译器仍是最终裁判**；截断索引下的缺失只报 warning。规则是正则级的：拦截的是文档化的坑，**编译器仍是最终裁判**。
+
+**配置**（`minecraft-tools` 行）：`shardedArbitration: auto | on | off`（默认 auto，`off` 时 `freeze` 需 `force`）、`maxAuditRetries: 3`、`maxCompileRounds: 3`。
+
+**三种驱动者**共用同一套 `.mcdev/` 文件协议：`host`（默认，subagent 工具）、`dsh-superagent`（把 `BRIEF.md` 交给它的执行器；`status` 只**探测** `ctx.get('orchestrator')`，**不新增 peer 依赖**）、`manual`。
+
+### 语义约定（避免误读 `status` 与 `merge`）
+
+- **`routes` 列是"当前"而不是累计**：`route` 每次都用这次编译日志**整体替换**该分片的 `compile-routes.json`（`count` = 这次路由到它的错误数）；重复路由同一份日志不会让数字翻倍。想看历史请读 `.mcdev/reports/timing.json`（append-only）。
+- **`written` 只统计真正发生的写入**：目标文件内容未变时记入 `unchanged`，不记 `written`；所以对同一棵树二次 `merge` 会报 `written: 0 / unchanged: N`，这是幂等成立的表现，不是失败。
+- **`contract.json` 的 `generatedAt` 与 `run-status.json` 每次都变**；其余产物（契约 stubs、白名单、BRIEF、manifest、findings、merge-report、compile-routes）在输入不变时**逐字节可复现**（已用完整重跑 + 快照 diff 验证）。
+
+**环境问题在开工前一次问清**（`minecraft-intake` 的「环境核对」表）：JDK 版本、目标版本服务端 jar 是否存在、测试服目录/端口/能否启停、核心是 Paper 还是 Folia、是否需要真人客户端、网络能否拉依赖、是否允许 runClient/runServer —— 每项都附一句「为什么问」，因为答案不同会改变方案；未回答的走表里的默认值。
+
+**已知限制**（0.12.0）：
+- 插件无法按路径沙箱限制子代理写入；隔离靠 manifest + `write-outside-scope` 审计（若装了 `dsh-superagent`，它的 git worktree 提供真正的文件级隔离）。
+- Mod 平台入口没有 `onDisable`：`onDisableStatements` 会以 `missing-anchor` 跳过并写进合并报告；请在事件里做清理。
+- 独立的 `mc-shard` 执行器预设未在 0.12.0 提供，分片复用 `mc-content`（仅 fs 工具）。
+- MockBukkit 生命周期冒烟未做（上游只有 1.20/1.21 工件，26.x 无）。
+
+### 0.12.1：来自真实分片项目（paper-homes）的修复
+
+第一次真实分片开发（Paper 1.21.8，四片：command / storage / gui / homes）暴露的摩擦点，已在 0.12.1 修掉：
+
+| 问题（实测） | 修复 |
+|---|---|
+| 模块名 `service` 冻结出 `ServiceService`；接口全是空壳 | `modules` 支持 `{ id, interfaceName, threadModel, doc, methods, dto }`；Javadoc 与线程模型写进 stub，brief 里不再是 `methods: []` |
+| 重新 freeze 后残留旧接口（如 `ServiceService.java`） | `freeze` 带 `force` 时按上一版 contract 的符号表**清理旧 stub**（`.mcdev` 与 `src` 两份） |
+| 内置索引是截断子集（1.21.8 仅 90 类），缺 `EventHandler` 等 | 新增 `extraAllowlist` + `allowlistNote`（宿主用 `javap` 核实后补入）；契约记录 `apiAllowlist.partial`，**截断索引下的缺失降为 warning**（提示用 javap/官方文档核实） |
+| 主类字段必须由宿主手工加，否则注入语句编译不过 | manifest 新增 `mainClassFields: [{ type, name }]`；模板新增 `// [mc:fields]` 锚点，merge 注入并按字段名去重 |
+| 注入语句在共享文件里报错时，`route` 只能算 `unowned` | `route` 现在会把错误行与各分片 manifest 的 init/shutdown 语句比对，命中即归属该分片（`origin: injected-statement`） |
+
+验证：249 测试全绿；`paper 26.2` 三分片链路仍 `BUILD SUCCESSFUL`。
+
+### 与 `dsh-superagent` 的关系：不依赖，只探测
+
+**代码层面零依赖**：`peerDependencies` 只有 `@deepseek-ai/cordis` / `dsh-tools` / `dsh-skill` / `schemastery`；全仓没有 `from 'dsh-superagent'` 的 import。唯一的接触点是 `status` 里一次**可选探测** `ctx.get('orchestrator')`，以及 `escalate` 产出的交接材料。所以没有 superagent 时，`mc_arbitrate` 的 7 个 action 全部照常工作，`status` 显示 `orchestrator: host`。
+
+这样设计的原因（v0.1.0 原型的现实）：
+
+- 它是 TypeScript 源码仓库，`main` 指向 `lib/index.js`；**GitHub 直接安装不会构建**，装上后 `lib/` 不存在，bundle 在启动时 import 失败；
+- 它的 `cordis.patch.yml` 明确写着 *"the plugin refuses to start without stateDir"*，而 profile 里默认没有配 `stateDir`；
+- 它的 peers 锁 `^0.2.1-alpha.2`、内部接口（Source / Ticket / Executor）仍是原型期，写死依赖等于把自己绑在一条会变的线上。
+
+**如果你希望它真正接管**，需要（与插件代码无关）：
+
+1. 从源码构建：`git clone deepseek-ai/dsh-superagent-prototype` → `pnpm install && pnpm build`（产出 `lib/`），再装进 profile；或等官方发布 npm 包后直接 `pnpm add`；
+2. 在 profile 的 `cordis.patch.yml` 里补 `stateDir`（它没有配置就拒绝启动）；
+3. 之后它的 Executor 会话可以直接读 `.mcdev/shards/<id>/BRIEF.md` 跑分片，结果落回同一目录，我们的 `merge` / `audit` / `route` 不变。
+
+**深度接管**（把 `.mcdev/shards/*` 自动变成它的 Trigger/Ticket）需要单独的可选包 `minecraft-dev-superagent-source`：作为它的 Source 插件实现，peer 只锁 `^0.2.1-alpha.2`，主包的 peer 列表不受影响。这一步**不在 0.12.x 内**，等它发正式版再评估。
+
+## 合规与免责声明 (Compliance & Disclaimer)
+
+1. **开源协议与署名要求 (License & Attribution)**
+   本项目自 `v0.12.0` 起采用 **Apache License 2.0** 协议开源（`v0.11.0` 及更早版本仍为 MIT）。
+   任何基于本项目的二次分发、修改或集成，均须严格遵守协议第 4 条之规定，完整保留根目录下的
+   `LICENSE` 与 `NOTICE` 文件，并在修改过的文件中显著标注变更说明。
+   未经作者书面许可，不得使用 `minecraft-dev` 名称及标识推广衍生分支。
+
+2. **DeepSeek Harness (DSH) 生态独立性声明**
+   `minecraft-dev` 是为 DeepSeek Harness (DSH) 环境开发的第三方开源社区插件。
+   本项目通过标准接口与 DSH 及 DeepSeek Super Agent 协同工作，但并非 DeepSeek 官方出品，
+   不代表 DeepSeek 官方立场。
+
+3. **Minecraft 品牌与 EULA 合规声明**
+   "Minecraft" 是 Mojang Synergies AB 的注册商标。本项目与 Mojang Studios 或 Microsoft
+   没有任何从属、赞助或批准关系。使用本插件生成的服务端代码及构建产物归使用者所有，
+   使用者需自行确保所部署的服务器及插件逻辑符合
+   [Minecraft 最终用户许可协议 (EULA)](https://www.minecraft.net/eula)
+   及目标服务端软件（Paper/Spigot/Folia 等）的开源规范。

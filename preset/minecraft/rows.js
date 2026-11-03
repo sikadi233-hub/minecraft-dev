@@ -17,7 +17,7 @@
 /** Display metadata, mirroring `preset.yml`. */
 export const META = {
     name: "Minecraft 专家",
-    description: `Minecraft 服务端插件与模组开发专家：全时代（1.7.10~26.x）构建与平台知识、mc_scaffold/mc_gradle 工具、7 个按需加载技能，支持子代理与工作流协同。`,
+    description: `Minecraft 服务端插件与模组开发专家：全时代（1.7.10~26.x）构建与平台知识、mc_scaffold/mc_gradle 工具、9 个按需加载技能、18 份离线 API 签名索引，以及分片仲裁引擎 mc_arbitrate（契约冻结/审计/合并/编译路由，21 条规则）。`,
     order: 5,
   }
 

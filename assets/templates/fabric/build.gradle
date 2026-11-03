@@ -7,6 +7,7 @@ group = "{{pkg}}"
 version = "0.1.0"
 
 dependencies {
+    // [mc:dependencies]
     minecraft "com.mojang:minecraft:{{mcVersion}}"
     // 官方 Mojang 映射（mojmap）：Fabric 1.x 时代全用 mojmap，不用 yarn。
     // 注意：mojmap 工程里类名是 BuiltInRegistries/Item.Properties/CommandSourceStack 等，

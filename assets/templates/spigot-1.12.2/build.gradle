@@ -21,6 +21,7 @@ repositories {
 }
 
 dependencies {
+    // [mc:dependencies]
     // spigot-api 以 compileOnly 引入：编译时可见，不打进产物 jar（运行期由服务端提供）。
     compileOnly '{{spigotApi}}'
 }

@@ -14,3 +14,6 @@ author: {{name}}
 #   {{name}}.mycommand:
 #     description: Allows /mycommand
 #     default: true
+
+# [mc:commands]
+# [mc:permissions]

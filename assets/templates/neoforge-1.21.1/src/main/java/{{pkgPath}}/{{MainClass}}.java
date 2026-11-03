@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 
 @Mod({{MainClass}}.MODID)
 public class {{MainClass}} {
+    // [mc:fields]
     public static final String MODID = "{{name}}";
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -17,6 +18,7 @@ public class {{MainClass}} {
         // mod bus（IEventBus）：模组生命周期事件与 DeferredRegister 的注册挂载点。
         // game bus（NeoForge.EVENT_BUS）：游戏运行期事件；@SubscribeEvent 方法所在对象需先注册。
         NeoForge.EVENT_BUS.register(this);
+        // [mc:init]
     }
 
     @SubscribeEvent

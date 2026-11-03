@@ -9,6 +9,7 @@
 
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import Schema from '@deepseek-ai/schemastery'
+import { ACTIONS, arbitrate } from './lib/arbitration/tool.js'
 import { renderGradleResult, runGradle } from './lib/gradle.js'
 import { gradleCallView, gradleResultView, scaffoldCallView } from './lib/present.js'
 import { scaffoldProject } from './lib/scaffold.js'
@@ -46,6 +47,15 @@ export const Config = Schema.object({
   gradleTimeoutMs: Schema.number().default(600_000),
   /** Characters mc_gradle keeps from merged output (head + tail around the truncation marker). */
   outputTailChars: Schema.number().default(12_000),
+  /**
+   * Whether `mc_arbitrate` may freeze a sharded contract: `auto` (only when the
+   * host asks for it), `on` (same), `off` (refuse unless `force=true`).
+   */
+  shardedArbitration: Schema.string().default('auto'),
+  /** Audit rounds one shard may fail before the circuit breaker opens. */
+  maxAuditRetries: Schema.number().default(3),
+  /** Compile → route → fix rounds the host may run. */
+  maxCompileRounds: Schema.number().default(3),
 })
 
 /** Register the minecraft-dev tools on `ctx.tools`. */
@@ -179,5 +189,107 @@ export function apply(ctx, config = {}) {
     },
     presentCall: gradleCallView,
     presentResult: gradleResultView,
+  }))
+
+  ctx.tools.register(defineTool({
+    name: 'mc_arbitrate',
+    description: 'Deterministic sharded-development engine for Minecraft projects: contract freeze, per-shard briefs, '
+      + 'manifest validation, static audit, merge and compile-error routing. Actions: '
+      + 'freeze (frozen interface/DTO stubs with thread model and doc, contract.json, API allowlist from the bundled index plus host-verified extras), '
+      + 'brief (per-shard three-block task with a shared prefix), audit (8 high-confidence rules + retry counter), '
+      + 'merge (dependencies, plugin.yml commands/permissions, lifecycle statements, JSON mod metadata), '
+      + 'route (compiler errors -> responsible shard, with contract-collapse detection), '
+      + 'escalate (materials for the upstream orchestrator) and status (progress, retries, orchestrator). '
+      + 'All actions write under <projectDir>/.mcdev and never call a model. '
+      + 'Use when a Minecraft task spans three or more modules; single-file changes should stay on the plain scaffold+build path.',
+    parameters: {
+      action: {
+        type: 'string',
+        required: true,
+        enum: [...ACTIONS],
+        description: `Action to run: ${ACTIONS.join(', ')}.`,
+      },
+      projectDir: { type: 'string', required: true, description: 'Absolute path of the project root (must exist).' },
+      platform: { type: 'string', enum: [...SUPPORTED_PLATFORMS], description: 'freeze: project platform.' },
+      minecraftVersion: { type: 'string', description: 'freeze: Minecraft line, e.g. 1.21.8 or 26.3.' },
+      packageName: { type: 'string', description: 'freeze: Java package for the frozen contract (default mcdev.contract).' },
+      modules: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'freeze: kebab-case module ids, one per intended shard (e.g. ["command","storage","gui"]).',
+      },
+      extraAllowlist: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'freeze: extra fully-qualified classes to allow (e.g. classes you verified with javap against the real jar when the bundled index is truncated).',
+      },
+      allowlistNote: {
+        type: 'string',
+        description: 'freeze: why the allowlist was extended; stored in api-allowlist.json next to the class list.',
+      },
+      shard: { type: 'string', description: 'brief/audit: limit the action to one shard id.' },
+      force: { type: 'boolean', description: 'freeze: replace an existing frozen contract (also overrides shardedArbitration=off).' },
+      dryRun: { type: 'boolean', description: 'merge: report the planned writes without touching the project.' },
+      compileLog: { type: 'string', description: 'route: the compiler output (mc_gradle result output text).' },
+      reason: { type: 'string', description: 'escalate: why the pipeline cannot continue.' },
+    },
+    output: {
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          action: { type: 'string', required: true, description: 'The action that ran.' },
+          ok: { type: 'boolean', required: true, description: 'Whether the action completed without a blocking problem.' },
+          summary: { type: 'string', required: true, description: 'One-screen human summary (table for status).' },
+          findings: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                ruleId: { type: 'string', required: true },
+                severity: { type: 'string', required: true },
+                shard: { type: 'string', required: true },
+                file: { type: 'string', required: true },
+                line: { type: 'number', required: true },
+                message: { type: 'string', required: true },
+              },
+            },
+            description: 'audit: rule findings.',
+          },
+          paths: { type: 'array', items: { type: 'string' }, description: 'Files written or read by the action.' },
+          counts: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              stubs: { type: 'number' },
+              allowlist: { type: 'number' },
+              modules: { type: 'number' },
+              shards: { type: 'number' },
+              manifests: { type: 'number' },
+              errors: { type: 'number' },
+              warnings: { type: 'number' },
+              filesWritten: { type: 'number' },
+              skipped: { type: 'number' },
+              commands: { type: 'number' },
+              unowned: { type: 'number' },
+              retries: { type: 'number' },
+              findings: { type: 'number' },
+            },
+            description: 'Per-action numeric counters.',
+          },
+          extra: { type: 'string', description: 'Additional notes (warnings, escalation hint, orchestrator name).' },
+        },
+      },
+      render: (_args, value) => [{
+        type: 'text',
+        text: `mc_arbitrate ${value.action} — ${value.ok ? 'ok' : 'needs attention'}\n${value.summary}`
+          + (value.extra ? `\n\n${value.extra}` : '')
+          + (value.paths.length > 0 ? `\n\nfiles: ${value.paths.slice(0, 6).join(', ')}` : ''),
+      }],
+    },
+    execute(args, exec) {
+      return arbitrate(args, { ctx, config, signal: exec.signal })
+    },
   }))
 }

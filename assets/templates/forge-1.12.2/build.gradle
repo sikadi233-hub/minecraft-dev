@@ -4,6 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
+        // [mc:dependencies]
         classpath '{{forgeGradle}}'
     }
 }

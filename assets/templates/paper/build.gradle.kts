@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    // [mc:dependencies]
     // The Paper server provides this API at runtime, so it must not be bundled.
     compileOnly("io.papermc.paper:paper-api:{{paperApiVersion}}")
 }

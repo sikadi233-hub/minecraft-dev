@@ -4,3 +4,6 @@ main: {{pkg}}.{{MainClass}}
 api-version: "{{apiVersion}}"
 author: YourName
 description: {{name}} plugin
+
+# [mc:commands]
+# [mc:permissions]
