@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      # The plugin has no runtime dependencies, so the suite runs straight off the
+      # checkout: no install step, no lockfile, nothing to cache or to fail on.
+      - name: Node version
+        run: node --version
+      - name: Unit tests
+        run: npm test
+      - name: API index integrity
+        run: npm run check-api-index
+
+  package:
+    name: package manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # The licence and the attribution file must reach the registry: npm adds
+      # LICENSE automatically but never NOTICE, so the files list is checked here.
+      - name: Pack and inspect the tarball
+        run: |
+          set -euo pipefail
+          npm pack --pack-destination "$RUNNER_TEMP" > /dev/null
+          tar -tzf "$RUNNER_TEMP"/minecraft-dev-*.tgz > "$RUNNER_TEMP/contents.txt"
+          grep -q '^package/LICENSE$' "$RUNNER_TEMP/contents.txt" || { echo 'LICENSE missing from the tarball'; exit 1; }
+          grep -q '^package/NOTICE$' "$RUNNER_TEMP/contents.txt" || { echo 'NOTICE missing from the tarball'; exit 1; }
+          grep -q '^package/lib/arbitration/audit.js$' "$RUNNER_TEMP/contents.txt" || { echo 'arbitration engine missing from the tarball'; exit 1; }
+          echo "tarball contents verified"
+      - name: Licence headers present
+        run: |
+          set -euo pipefail
+          grep -q 'Apache License' LICENSE
+          grep -q 'Copyright 2026 sikadi233' LICENSE
+          grep -q 'Copyright 2026 sikadi233' NOTICE
+          count=$(grep -l 'SPDX-License-Identifier: Apache-2.0' lib/arbitration/*.js | wc -l)
+          test "$count" -eq 13 || { echo "expected 13 SPDX headers, found $count"; exit 1; }
+          echo "licence statements verified"

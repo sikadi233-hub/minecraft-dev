@@ -1,6 +1,6 @@
 # minecraft-dev
 
-[![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com)
+[![Awesome DSH Plugin](https://awesome-dsh-plugin.com/badge.svg)](https://awesome-dsh-plugin.com) [![CI](https://github.com/sikadi233-hub/minecraft-dev/actions/workflows/ci.yml/badge.svg)](https://github.com/sikadi233-hub/minecraft-dev/actions/workflows/ci.yml)
 
 Minecraft 开发插件 for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（`dsh`）：让 agent 更擅长写 Minecraft 服务端插件与模组，覆盖 **MC 1.7.10 ~ 26.3 全时代**。v0.12 起提供三样别处没有的东西：**18 份离线 API 签名索引**（`references/api-index/`，钉选线从 1.7.10 到 26.3）、**确定性分片流水线 `mc_arbitrate`**（契约冻结 → brief → 审计 → 合并 → 编译 → 定点路由，全程不调模型）、**21 条高置信静态审计规则**（含 5 条跨分片检查）。许可以 **Apache-2.0 + NOTICE** 发布。
 
