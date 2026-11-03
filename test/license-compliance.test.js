@@ -33,6 +33,12 @@ test('LICENSE is the verbatim Apache License 2.0 text', () => {
   assert.equal(/MIT License/i.test(license), false, 'LICENSE must no longer be the MIT text')
 })
 
+test('the copyright holder is named in LICENSE and README, not only in NOTICE', () => {
+  assert.match(license, /Copyright 2026 sikadi233/, 'LICENSE must fill the appendix owner line')
+  assert.match(license, /sikadi233-hub\/minecraft-dev/, 'LICENSE must carry the canonical repository url')
+  assert.match(readme, /版权归属：Copyright 2026/, 'README must state the holder next to the licence rules')
+})
+
 test('NOTICE carries the attribution Apache-2.0 section 4(d) protects', () => {
   assert.match(notice, /minecraft-dev/, 'NOTICE must name the project')
   assert.match(notice, /Copyright 2026 sikadi233/, 'NOTICE must carry the copyright line')

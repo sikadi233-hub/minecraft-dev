@@ -385,6 +385,7 @@ npm run check-api-index      # 只校验已提交索引的 provenance 是否完�
    任何基于本项目的二次分发、修改或集成，均须严格遵守协议第 4 条之规定，完整保留根目录下的
    `LICENSE` 与 `NOTICE` 文件，并在修改过的文件中显著标注变更说明。
    未经作者书面许可，不得使用 `minecraft-dev` 名称及标识推广衍生分支。
+   版权归属：Copyright 2026 **sikadi233**（https://github.com/sikadi233-hub/minecraft-dev）。
 
 2. **DeepSeek Harness (DSH) 生态独立性声明**
    `minecraft-dev` 是为 DeepSeek Harness (DSH) 环境开发的第三方开源社区插件。
