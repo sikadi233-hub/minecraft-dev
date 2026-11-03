@@ -28,7 +28,7 @@ async function scaffoldPlatform(platform, minecraftVersion) {
   assert.equal(result.minecraftVersion, minecraftVersion)
   assert.equal(result.wrapperReady, true)
   assert.ok(result.filesCreated.length >= 7, `filesCreated=${result.filesCreated.length}`)
-  assert.equal(result.buildCommand, 'gradlew.bat build')
+  assert.equal(result.buildCommand, process.platform === 'win32' ? 'gradlew.bat build' : './gradlew build')
 
   // Main class lands on the rendered package path with the right package line.
   const mainPath = 'src/main/java/com/example/myplugin/MyPlugin.java'
