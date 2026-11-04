@@ -66,6 +66,7 @@ test('the published package ships the NOTICE file', () => {
 
 test('the version reflects the licence transition', () => {
   // 0.12.0 carries the licence transition; patches keep the same major/minor.
-  assert.match(pkg.version, /^0\.12\.\d+$/, `expected a 0.12.x release, got ${pkg.version}`)
+  const [, minor] = pkg.version.split('.').map(Number)
+  assert.ok(Number.isInteger(minor) && minor >= 12, `expected a 0.12+ release, got ${pkg.version}`)
   assert.notEqual(pkg.version, '0.11.0', 'the MIT release must not come back')
 })

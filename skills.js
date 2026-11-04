@@ -8,7 +8,9 @@
 
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
+import Schema from '@deepseek-ai/schemastery'
 import { BUNDLED_SKILL_RANK } from '@deepseek-ai/dsh-skill'
+import { shouldExposeSkills } from './lib/skill-scope.js'
 
 const PROVIDER_NAME = 'minecraft-dev'
 
@@ -75,7 +77,13 @@ const candidates = SKILLS.map(skill => {
 
 const provider = {
   name: PROVIDER_NAME,
-  list: () => Promise.resolve([...candidates]),
+  // `dsh-skill` passes the viewing workspace as `options.cwd`, which is what
+  // lets the catalog stay out of non-Minecraft projects.
+  list: (options = {}) => Promise.resolve(
+    shouldExposeSkills({ cwd: options.cwd, scope: configRef.scope, workspaces: configRef.workspaces })
+      ? [...candidates]
+      : [],
+  ),
   async get(candidate) {
     return {
       name: candidate.name,
@@ -89,12 +97,39 @@ const provider = {
   },
 }
 
+/**
+ * Where the skill catalog is visible.
+ *
+ * - `auto` (default): list in Minecraft workspaces and in workspaces that carry no
+ *   stack markers at all (so a fresh directory can still discover the skills); stay
+ *   out of projects that clearly belong to another stack.
+ * - `always`: list everywhere (the pre-0.12.14 behaviour).
+ * - `listed`: list only under the roots in `skillWorkspaces`.
+ */
+export const Config = Schema.object({
+  skillScope: Schema.union([Schema.const('auto'), Schema.const('always'), Schema.const('listed')]).default('auto'),
+  skillWorkspaces: Schema.string().default(''),
+})
+
 /** Cordis plugin name. */
 export const name = 'minecraft-skills'
 /** Service required by the bundled provider. */
 export const inject = ['skills']
 
+/** Parsed scope shared with the provider (set in `apply`). */
+const configRef = { scope: 'auto', workspaces: [] }
+
+/** Split the configured workspace roots (newlines, commas or semicolons). */
+export function parseWorkspaces(value) {
+  return String(value ?? '')
+    .split(/[\r\n,;]+/)
+    .map(entry => entry.trim())
+    .filter(entry => entry.length > 0)
+}
+
 /** Register the bundled Minecraft skills provider on `ctx.skills`. */
-export function apply(ctx) {
+export function apply(ctx, config = {}) {
+  configRef.scope = String(config.skillScope ?? 'auto')
+  configRef.workspaces = parseWorkspaces(config.skillWorkspaces)
   ctx.skills.registerProvider(() => provider)
 }

@@ -1,6 +1,11 @@
 - insert:
     - id: minecraft-skills
       name: minecraft-dev/skills
+      config:
+        # auto: list in Minecraft workspaces (and in empty ones), stay out of other stacks
+        skillScope: auto
+        # listed mode only: newline/comma separated workspace roots
+        skillWorkspaces: ""
 
     - id: minecraft-tools
       name: minecraft-dev/tools

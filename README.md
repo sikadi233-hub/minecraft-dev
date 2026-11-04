@@ -331,6 +331,21 @@ npm run check-api-index      # 只校验已提交索引的 provenance 是否完�
 **配置**（`minecraft-tools` 行）：`shardedArbitration: auto | on | off`（默认 auto，`off` 时 `freeze` 需 `force`）、`maxAuditRetries: 3`、`maxCompileRounds: 3`。
 
 **三种驱动者**共用同一套 `.mcdev/` 文件协议：`host`（默认，subagent 工具）、`dsh-superagent`（把 `BRIEF.md` 交给它的执行器；`status` 只**探测** `ctx.get('orchestrator')`，**不新增 peer 依赖**）、`manual`。
+### 工作空间作用域（v0.13.0）
+
+`dsh-skill` 会把当前工作区的 `cwd` 传给每个 skill provider，因此技能目录可以按工作区收敛，而不是全局注入。配置项（`minecraft-skills` 行）：
+
+| 配置 | 取值 | 行为 |
+|---|---|---|
+| `skillScope` | `auto`（默认） | 在 **Minecraft 工程**与**空/无法识别的目录**里显示；在明确属于别的技术栈（有 `package.json`/`pyproject.toml`/`Cargo.toml`/`go.mod` 且无 MC 标记）的工作区里**不注入** |
+| | `always` | 任何工作区都显示（0.12.x 的行为） |
+| | `listed` | 只在 `skillWorkspaces` 列出的根目录（含子目录）下显示 |
+| `skillWorkspaces` | 换行/逗号分隔的路径 | 仅 `listed` 模式使用 |
+
+Mc 工程的判定标记（任一命中）：`plugin.yml` / `paper-plugin.yml` / `fabric.mod.json` / `mcmod.info` / `mods.toml` / `neoforge.mods.toml`（根目录或 `src/main/resources`）、构建脚本或 `gradle.properties` 里的 `paper-api`/`fabric-loom`/`neoforged`/`minecraft_version` 等，以及 `src/main/java` 里的 MC import（浅扫，最多 30 个文件）。
+
+判定有 30 秒缓存；`explainScope()` 会给出判定理由（供排错）。
+
 
 ### 语义约定（避免误读 `status` 与 `merge`）
 
