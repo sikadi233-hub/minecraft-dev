@@ -22,6 +22,7 @@
     "NOTICE"
   ],
   "exports": {
+    ".": "./skills.js",
     "./skills": "./skills.js",
     "./codex": "./codex.js",
     "./tools": "./tools.js",
