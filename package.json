@@ -1,6 +1,6 @@
 {
   "name": "minecraft-dev",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "author": "sikadi233",
   "description": "Minecraft development for DeepSeek Harness: Paper/Spigot plugins and Fabric/Forge/NeoForge mods across MC 1.7.10-26.3, offline API signature indexes, the mc_scaffold/mc_gradle tools, and a deterministic sharded pipeline (mc_arbitrate) with 21 audit rules.",
   "type": "module",
