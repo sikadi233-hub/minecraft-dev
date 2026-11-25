@@ -225,6 +225,24 @@ cp -r <minecraft-dev 仓库>/preset/minecraft ~/.dsh/.agent-presets/
 
 26.x 的坐标按版本钉死（26.2 与 26.3 各一套）：mod 平台请求一个未钉的版本（如 `26.4`）会**显式报错**并列出已钉版本，不会静默给你另一版的项目。26.2 的坐标：fabric `loom 1.17.19 / loader 0.19.3 / api 0.157.0+26.2`、neoforge `moddev 2.0.144 / 26.2.0.59`；26.3：fabric `loom 1.17.21 / loader 0.19.5 / api 0.161.0+26.3`、neoforge `moddev 2.0.147 / 26.3.0.12-beta`。26.3 的 Java 仍是 25。**四组真机构建已跑通**（2026-09）：paper 26.2（对照）/ paper 26.3 / fabric 26.3 / neoforge 26.3 全部 BUILD SUCCESSFUL。fabric 的 loom 刻意留在 1.17 线：1.18.2 要求 **Gradle 自身跑在 Java 25** 上（`requires at least JVM runtime version 25`），会把「用旧 JDK 启动 Gradle」的用户全部挡掉。
 
+#### 任意版本：Paper / Fabric / NeoForge 的动态解析（v0.14.0）
+
+钉选矩阵是**已验证**的默认路径（每条线都跑过真机构建）；矩阵之外的版本，这三个平台可以按加载器**官方元数据**现场解析坐标，而不是硬编码：
+
+| 平台 | 数据源 | 得到什么 |
+|---|---|---|
+| Paper | `repo.papermc.io` 的 `paper-api` maven-metadata | 确认 `<mc>-R0.1-SNAPSHOT` 或 `<mc>.build.*` 存在；Java 级别按时代推断 |
+| Fabric | `meta.fabricmc.net`（loader、yarn）+ Modrinth `fabric-api` | 该版本的 loader / yarn / fabric-api 构建；loom 按代际选 1.17.19 / 1.17.21 |
+| NeoForge | `maven.neoforged.net` 的 `net.neoforged:neoforge` metadata | 该 MC 对应系列（如 1.21.4 → `21.4.x`）的最新稳定构建，无稳定则取最新预发布（26.3 只有 `-beta`） |
+
+行为约定：
+
+- 动态生成的工程标记 **`resolution: "dynamic"`、`unverified: true`**，卡片里会写明"这条线没有经过钉选线的构建验证"，并列出读过的元数据来源。
+- **Forge 与 Spigot 仍然只走钉选线**（前者各时代 ForgeGradle/映射耦合，后者需要 BuildTools 现场编译），请求未钉版本会明确报错。
+- **Paper 是例外**：元数据检查失败（离线、仓库不可达）时仍按 `pinned-lenient` 生成，并在 `note` 里说明"未验证 paper-api 构建"——因为 Paper 的坐标本身就是 `<mc>-R0.1-SNAPSHOT`，生成不会错版本。
+- Fabric / NeoForge 解析失败**不会**回退：宁可报错，也不给你一个"其实是别的 MC 版本"的工程。
+- 解析结果缓存在 `.cache/dynamic/`（gitignored），6 小时内重复生成不联网。
+
 ## 前置要求
 
 - dsh 本体（Node ^22.19 || >=24，pnpm）

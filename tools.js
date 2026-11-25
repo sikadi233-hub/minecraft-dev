@@ -88,7 +88,7 @@ export function apply(ctx, config = {}) {
       minecraftVersion: {
         type: 'string',
         required: true,
-        description: 'Target Minecraft version, e.g. 1.7.10, 1.12.2, 1.16.5, 1.21.8, 1.21.x, 26.3. Supported lines per platform are listed in the error when unknown.',
+        description: 'Target Minecraft version, e.g. 1.7.10, 1.12.2, 1.16.5, 1.21.8, 1.21.x, 26.3. Paper, Fabric and NeoForge accept ANY version published by the loader: unpinned versions are resolved from the official metadata (network) and marked unverified; Forge and Spigot stay on the pinned lines.',
       },
       javaVersion: {
         type: 'integer',
@@ -112,6 +112,10 @@ export function apply(ctx, config = {}) {
           },
           buildCommand: { type: 'string', required: true, description: SCAFFOLD_OUTPUT_DESCRIPTION.buildCommand },
           wrapperReady: { type: 'boolean', required: true, description: SCAFFOLD_OUTPUT_DESCRIPTION.wrapperReady },
+          resolution: { type: 'string', required: true, description: 'pinned (verified matrix), dynamic (resolved from loader metadata) or pinned-lenient (Paper without a metadata check).' },
+          unverified: { type: 'boolean', required: true, description: 'True when the project has not been through the pinned build verification.' },
+          sources: { type: 'array', items: { type: 'string' }, description: 'Metadata documents a dynamic resolution read.' },
+          note: { type: 'string', description: 'Why a dynamic resolution is unverified, or what lenient fallback happened.' },
         },
       },
       render: (_args, value) => [{
@@ -119,6 +123,7 @@ export function apply(ctx, config = {}) {
         text: `Created ${value.platform} project ${value.projectDir} for Minecraft ${value.minecraftVersion} `
           + `(${value.filesCreated.length} files, Gradle wrapper included). `
           + `Build with: ${value.buildCommand} — the first build downloads dependencies and takes several minutes.`
+          + (value.resolution === 'pinned' ? '' : `\nResolution: ${value.resolution}${value.unverified ? ' (unverified)' : ''}${value.note ? ` — ${value.note}` : ''}`)
           + (value.platform === 'spigot' && value.minecraftVersion.startsWith('1.7')
             ? `\nNote: before building, place the vendored API jar into ${value.projectDir}\\libs\\ per libs/README.txt (no public maven hosts 1.7.10 spigot-api).`
             : ''),
